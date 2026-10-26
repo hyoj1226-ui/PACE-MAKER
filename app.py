@@ -8,7 +8,7 @@ from datetime import datetime, date
 # 1. 페이지 기본 설정 (이모티콘 전면 금지)
 st.set_page_config(page_title="PACE MAKER", layout="centered")
 
-# 2. 토스 디자인 시스템(TDS) 및 커스텀 CSS
+# 2. 토스 디자인 시스템(TDS) 및 버튼 애니메이션 커스텀 CSS
 tds_style = """
 <style>
     /* 전체 배경색 및 폰트 */
@@ -35,8 +35,20 @@ tds_style = """
     }
 
     /* 
-       [홈 화면 3열 카드형 메인 버튼 CSS] 
-       세련된 호버 효과와 입체감을 살린 메뉴 카드 디자인
+       [전역 버튼 클릭 애니메이션 (Global Button Active Scale)]
+       모든 버튼을 누를 때 튀어 오르듯 수축하는 효과 적용
+    */
+    button {
+        transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+    
+    button:active {
+        transform: scale(0.94) !important;
+        opacity: 0.9 !important;
+    }
+
+    /* 
+       [홈 화면 3열 메인 메뉴 버튼]
     */
     div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(3)) {
         gap: 12px !important;
@@ -52,7 +64,6 @@ tds_style = """
         font-size: 16px !important;
         font-weight: 700 !important;
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03) !important;
-        transition: all 0.25s ease !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
@@ -63,29 +74,92 @@ tds_style = """
         background-color: #FFFFFF !important;
         border-color: #3182F6 !important;
         color: #3182F6 !important;
-        transform: translateY(-3px) !important;
-        box-shadow: 0 8px 24px rgba(49, 130, 246, 0.15) !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 20px rgba(49, 130, 246, 0.15) !important;
     }
 
-    /* 화살표 형태의 심플한 뒤로가기 버튼 스타일 */
-    div.back-btn > button {
-        background-color: transparent !important;
-        color: #6B7684 !important;
-        border: none !important;
-        border-radius: 8px !important;
-        padding: 6px 10px !important;
-        font-size: 15px !important;
-        font-weight: 700 !important;
-        width: auto !important;
-        text-align: left !important;
-        box-shadow: none !important;
+    div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(3)) button:active {
+        transform: scale(0.94) !important;
+        box-shadow: 0 2px 8px rgba(49, 130, 246, 0.1) !important;
     }
+
+    /* 
+       [뒤로가기 버튼] 글자 없는 심플한 화살표 버튼
+    */
+    div.back-btn > button {
+        background-color: #FFFFFF !important;
+        color: #191F28 !important;
+        border: 1px solid #E5E8EB !important;
+        border-radius: 12px !important;
+        padding: 6px 12px !important;
+        font-size: 18px !important;
+        font-weight: 800 !important;
+        width: 44px !important;
+        height: 44px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+    }
+
     div.back-btn > button:hover {
         color: #3182F6 !important;
+        border-color: #3182F6 !important;
         background-color: #E8F3FF !important;
     }
 
-    /* 달력 월 이동 버튼 */
+    /* 
+       [등록/기록 버튼 전용 초록색 애니메이션]
+    */
+    div[data-testid="stFormSubmitButton"] > button, div.record-btn > button {
+        background-color: #10B981 !important;
+        color: #FFFFFF !important;
+        border-radius: 12px !important;
+        border: none !important;
+        font-weight: 700 !important;
+        font-size: 15px !important;
+        padding: 10px 16px !important;
+        width: 100% !important;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25) !important;
+    }
+
+    div[data-testid="stFormSubmitButton"] > button:hover, div.record-btn > button:hover {
+        background-color: #059669 !important;
+        box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35) !important;
+    }
+
+    div[data-testid="stFormSubmitButton"] > button:active, div.record-btn > button:active {
+        transform: scale(0.95) !important;
+        background-color: #047857 !important;
+    }
+
+    /* 
+       [삭제 버튼 전용 빨간색 애니메이션]
+    */
+    div.delete-btn > button {
+        background-color: #FFF1F2 !important;
+        color: #F43F5E !important;
+        border: 1px solid #FFE4E6 !important;
+        border-radius: 10px !important;
+        padding: 8px 14px !important;
+        font-size: 13px !important;
+        font-weight: 700 !important;
+        width: 100% !important;
+    }
+
+    div.delete-btn > button:hover {
+        background-color: #F43F5E !important;
+        color: #FFFFFF !important;
+        border-color: #F43F5E !important;
+        box-shadow: 0 4px 12px rgba(244, 63, 94, 0.25) !important;
+    }
+
+    div.delete-btn > button:active {
+        transform: scale(0.94) !important;
+        background-color: #E11D48 !important;
+    }
+
+    /* 캘린더 월 이동 버튼 */
     div.month-nav-btn > button {
         background-color: #E8F3FF !important;
         color: #3182F6 !important;
@@ -95,27 +169,13 @@ tds_style = """
         font-size: 14px !important;
         font-weight: 700 !important;
     }
+
     div.month-nav-btn > button:hover {
         background-color: #DCEBFF !important;
     }
 
-    /* 액션 버튼: 삭제 (명사형) */
-    div.delete-btn > button {
-        background-color: #FFF1F2 !important;
-        color: #F43F5E !important;
-        border: 1px solid #FFE4E6 !important;
-        border-radius: 10px !important;
-        padding: 8px 14px !important;
-        font-size: 13px !important;
-        font-weight: 600 !important;
-    }
-    div.delete-btn > button:hover {
-        background-color: #FFE4E6 !important;
-        color: #E11D48 !important;
-    }
-
-    /* 액션 버튼: 기록 및 등록 (토스 블루) */
-    .stButton > button, div[data-testid="stFormSubmitButton"] > button {
+    /* 일반 토스 블루 버튼 (메인 동작용) */
+    .stButton > button {
         background-color: #3182F6;
         color: #FFFFFF;
         border-radius: 12px;
@@ -124,10 +184,9 @@ tds_style = """
         font-size: 14px;
         padding: 10px 16px;
         width: 100%;
-        transition: all 0.2s ease;
     }
 
-    .stButton > button:hover, div[data-testid="stFormSubmitButton"] > button:hover {
+    .stButton > button:hover {
         background-color: #1B64DA;
     }
 
@@ -264,7 +323,6 @@ def set_page(page_name):
 # 1. 홈 화면 (Home)
 # ==========================================
 if st.session_state.current_page == "home":
-    # 대형 PM 로고 및 타이틀 헤더
     st.markdown(
         """
         <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 16px; margin-bottom: 32px;">
@@ -276,7 +334,6 @@ if st.session_state.current_page == "home":
         unsafe_allow_html=True
     )
     
-    # 학습 현황 요약
     tasks = st.session_state.tasks
     total_count = len(tasks)
     active_count = sum(1 for t in tasks if (int(t['total_amount']) - int(t['completed_amount'])) > 0)
@@ -289,7 +346,6 @@ if st.session_state.current_page == "home":
         st.markdown(f"<p style='color: #4E5968; font-size: 15px; margin: 0;'>현재 <b>{active_count}개</b>의 진행 중인 과제가 있습니다.</p>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # 3개 항목 가로 배치 (명사형 심플 라벨 + 서체 커스텀)
     col1, col2, col3 = st.columns(3)
     with col1:
         if st.button("오늘의 할 일", key="btn_home_todo"):
@@ -309,9 +365,9 @@ if st.session_state.current_page == "home":
 # 2. 해야 할 일 페이지 (To-Do)
 # ==========================================
 elif st.session_state.current_page == "todo":
-    # 상단 뒤로가기 버튼 (< 홈)
+    # 글자 없는 화살표 뒤로가기 버튼 (←)
     st.markdown("<div class='back-btn'>", unsafe_allow_html=True)
-    if st.button("< 홈", key="back_from_todo"):
+    if st.button("←", key="back_from_todo"):
         set_page("home")
     st.markdown("</div>", unsafe_allow_html=True)
     
@@ -362,11 +418,13 @@ elif st.session_state.current_page == "todo":
                 with col2:
                     if remaining_amount > 0 and end_date >= today and remaining_days > 0:
                         today_add = st.number_input(f"오늘 한 양 ({task['unit']})", min_value=0, value=0, step=1, key=f"input_{idx}")
+                        st.markdown("<div class='record-btn'>", unsafe_allow_html=True)
                         if st.button("기록", key=f"btn_{idx}"):
                             task['completed_amount'] = comp_amt + today_add
                             save_tasks(st.session_state.tasks)
                             st.success("기록 되었습니다.")
                             st.rerun()
+                        st.markdown("</div>", unsafe_allow_html=True)
                     
                     st.markdown("<div class='delete-btn' style='margin-top: 8px;'>", unsafe_allow_html=True)
                     if st.button("삭제", key=f"del_{idx}"):
@@ -381,9 +439,8 @@ elif st.session_state.current_page == "todo":
 # 3. 과제 등록 페이지 (Add Task)
 # ==========================================
 elif st.session_state.current_page == "add":
-    # 상단 뒤로가기 버튼 (< 홈)
     st.markdown("<div class='back-btn'>", unsafe_allow_html=True)
-    if st.button("< 홈", key="back_from_add"):
+    if st.button("←", key="back_from_add"):
         set_page("home")
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -430,9 +487,8 @@ elif st.session_state.current_page == "calendar":
     if st.session_state.selected_calendar_date is not None:
         selected_date_str = st.session_state.selected_calendar_date
         
-        # 상단 뒤로가기 버튼 (< 캘린더)
         st.markdown("<div class='back-btn'>", unsafe_allow_html=True)
-        if st.button("< 캘린더", key="back_to_cal_grid"):
+        if st.button("←", key="back_to_cal_grid"):
             st.session_state.selected_calendar_date = None
             st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
@@ -488,11 +544,13 @@ elif st.session_state.current_page == "calendar":
                     with col2:
                         if remaining_amount > 0 and sel_date_obj >= today and remaining_days > 0:
                             today_add = st.number_input(f"오늘 한 양 ({task['unit']})", min_value=0, value=0, step=1, key=f"cal_dt_input_{idx}")
+                            st.markdown("<div class='record-btn'>", unsafe_allow_html=True)
                             if st.button("기록", key=f"cal_dt_btn_{idx}"):
                                 task['completed_amount'] = comp_amt + today_add
                                 save_tasks(st.session_state.tasks)
                                 st.success("기록 되었습니다.")
                                 st.rerun()
+                            st.markdown("</div>", unsafe_allow_html=True)
                         
                         st.markdown("<div class='delete-btn' style='margin-top: 8px;'>", unsafe_allow_html=True)
                         if st.button("삭제", key=f"cal_dt_del_{idx}"):
@@ -507,9 +565,8 @@ elif st.session_state.current_page == "calendar":
     # 4-B. 월간 격자 캘린더 (Grid View)
     # ------------------------------------------
     else:
-        # 상단 뒤로가기 버튼 (< 홈)
         st.markdown("<div class='back-btn'>", unsafe_allow_html=True)
-        if st.button("< 홈", key="back_from_cal_main"):
+        if st.button("←", key="back_from_cal_main"):
             set_page("home")
         st.markdown("</div>", unsafe_allow_html=True)
 
