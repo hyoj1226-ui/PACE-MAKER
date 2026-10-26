@@ -1,9 +1,10 @@
 import streamlit as st
 import json
 import math
-from datetime import datetime, date, timedelta
+import re
+from datetime import datetime, date
 
-# 1. 페이지 기본 설정
+# 1. 페이지 기본 설정 (이모티콘 전면 제거)
 st.set_page_config(page_title="PACE MAKER", layout="centered")
 
 # 2. 토스 디자인 시스템(TDS) 커스텀 CSS
@@ -119,21 +120,28 @@ def save_tasks(tasks):
     with open(FILENAME, "w", encoding="utf-8") as f:
         json.dump(tasks, f, ensure_ascii=False, indent=4)
 
-# 유효 작업 일수 계산 로직
-def calculate_valid_days(start_date, end_date, exclude_weekends, custom_rest_days):
-    if start_date > end_date:
-        return 0
+# 분량 및 단위 파싱 함수 (합쳐서 적어도 인식 가능)
+def parse_amount_and_unit(text_input, default_unit):
+    text_input = text_input.strip()
+    if not text_input:
+        return None, None
     
-    current = start_date
-    valid_days = 0
-    while current <= end_date:
-        if exclude_weekends and current.weekday() >= 5:
-            pass
-        else:
-            valid_days += 1
-        current += timedelta(days=1)
+    # 숫자 부분 추출 (정수 및 실수 파싱)
+    match = re.search(r'([\d.]+)', text_input)
+    if not match:
+        return None, None
+    
+    amount = float(match.group(1))
+    
+    # 입력 텍스트에 단어가 직접 포함되어 있으면 인식
+    if "페이지" in text_input:
+        unit = "페이지"
+    elif "문제" in text_input:
+        unit = "문제 수"
+    else:
+        unit = default_unit
         
-    return max(0, valid_days - custom_rest_days)
+    return amount, unit
 
 # 세션 상태 초기화
 if "tasks" not in st.session_state:
@@ -156,7 +164,6 @@ st.markdown("<p style='color: #8B95A1; font-size: 14px; text-align: center; marg
 # 1. 홈 화면 (Home)
 # ==========================================
 if st.session_state.current_page == "home":
-    # 학습 현황 요약 카드
     tasks = st.session_state.tasks
     total_count = len(tasks)
     active_count = sum(1 for t in tasks if (t['total_amount'] - t['completed_amount']) > 0)
@@ -189,7 +196,7 @@ if st.session_state.current_page == "home":
         """
         <div class="tds-card" style="margin-top: 12px; margin-bottom: 12px; padding: 20px;">
             <h4 style="margin:0; font-size: 16px; color: #191F28; font-weight: 700;">과제 등록</h4>
-            <p style="margin: 4px 0 0 0; font-size: 13px; color: #8B95A1;">새로운 과제 이름, 총 분량, 마감일 및 휴식일 설정</p>
+            <p style="margin: 4px 0 0 0; font-size: 13px; color: #8B95A1;">새로운 과제 이름, 총 분량 및 마감일 설정</p>
         </div>
         """,
         unsafe_allow_html=True
@@ -215,12 +222,10 @@ if st.session_state.current_page == "home":
 # 2. 해야 할 일 페이지 (To-Do)
 # ==========================================
 elif st.session_state.current_page == "todo":
-    col_nav, col_title = st.columns([1, 2])
-    with col_nav:
-        st.markdown("<div class='sub-btn'>", unsafe_allow_html=True)
-        if st.button("홈으로 돌아가기", key="back_from_todo"):
-            set_page("home")
-        st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("<div class='sub-btn'>", unsafe_allow_html=True)
+    if st.button("홈으로 돌아가기", key="back_from_todo"):
+        set_page("home")
+    st.markdown("</div>", unsafe_allow_html=True)
     
     st.markdown("<h3 style='font-size: 20px; font-weight: 700; color: #191F28; margin-top: 16px; margin-bottom: 16px;'>해야 할 일</h3>", unsafe_allow_html=True)
 
@@ -237,10 +242,7 @@ elif st.session_state.current_page == "todo":
         today = date.today()
         for idx, task in enumerate(st.session_state.tasks):
             end_date = datetime.strptime(task['end_date'], "%Y-%m-%d").date()
-            exclude_weekends = task.get('exclude_weekends', False)
-            rest_days = task.get('rest_days', 0)
-            
-            remaining_days = calculate_valid_days(today, end_date, exclude_weekends, rest_days)
+            remaining_days = max(0, (end_date - today).days + 1)
             remaining_amount = task['total_amount'] - task['completed_amount']
             progress = min(1.0, max(0.0, task['completed_amount'] / task['total_amount']))
             
@@ -264,17 +266,7 @@ elif st.session_state.current_page == "todo":
                     else:
                         daily_target = math.ceil(remaining_amount / remaining_days)
                         st.metric(label="오늘의 추천 목표", value=f"{daily_target} {task['unit']}")
-                        
-                        option_info = []
-                        if exclude_weekends:
-                            option_info.append("주말 제외")
-                        if rest_days > 0:
-                            option_info.append(f"휴식일 {rest_days}일")
-                        
-                        info_str = f"남은 유효 기간 D-{remaining_days}일"
-                        if option_info:
-                            info_str += f" ({', '.join(option_info)})"
-                        st.caption(info_str)
+                        st.caption(f"남은 기간 D-{remaining_days}일")
 
                 with col2:
                     if remaining_amount > 0 and end_date >= today and remaining_days > 0:
@@ -307,28 +299,31 @@ elif st.session_state.current_page == "add":
     st.markdown("<h3 style='font-size: 18px; font-weight: 700; color: #191F28; margin-bottom: 16px;'>새로운 과제 추가</h3>", unsafe_allow_html=True)
     
     with st.form("add_task_form_page"):
-        title = st.text_input("과제 이름", placeholder="예: 수학 문제집 300제")
-        unit = st.text_input("분량 단위", value="페이지")
-        total_amount = st.number_input("총 분량", min_value=1.0, value=100.0)
-        end_date = st.date_input("마감일")
+        title = st.text_input("과제 이름", placeholder="예: 수학 문제집")
         
-        st.markdown("<p style='font-size: 13px; color: #8B95A1; margin-top: 12px; margin-bottom: 4px;'>일정 옵션</p>", unsafe_allow_html=True)
-        exclude_weekends = st.checkbox("주말(토/일) 자동 제외", value=False)
-        rest_days = st.number_input("추가 휴식일 수", min_value=0, value=0)
+        # 분량 단위 선택 (라디오 버튼)
+        unit_choice = st.radio("기본 분량 단위 선택", ["페이지", "문제 수"], horizontal=True)
+        
+        # 통합 분량 입력 칸 (숫자만 적거나 "100페이지", "300문제"처럼 합쳐서 적어도 자동 파싱)
+        total_input = st.text_input("총 분량", placeholder="예: 100페이지, 300문제 수 또는 숫자 100만 입력")
+        
+        end_date = st.date_input("마감일")
         
         submitted = st.form_submit_button("과제 등록하기")
         if submitted:
+            parsed_amount, parsed_unit = parse_amount_and_unit(total_input, unit_choice)
+            
             if not title.strip():
                 st.warning("과제 이름을 입력해 주세요.")
+            elif parsed_amount is None or parsed_amount <= 0:
+                st.warning("총 분량을 올바른 형식(예: 100, 100페이지, 300문제)으로 입력해 주세요.")
             else:
                 new_task = {
-                    "title": title,
-                    "unit": unit,
-                    "total_amount": float(total_amount),
+                    "title": title.strip(),
+                    "unit": parsed_unit,
+                    "total_amount": parsed_amount,
                     "completed_amount": 0.0,
-                    "end_date": end_date.strftime("%Y-%m-%d"),
-                    "exclude_weekends": exclude_weekends,
-                    "rest_days": int(rest_days)
+                    "end_date": end_date.strftime("%Y-%m-%d")
                 }
                 st.session_state.tasks.append(new_task)
                 save_tasks(st.session_state.tasks)
