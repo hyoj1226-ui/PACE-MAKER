@@ -6,7 +6,7 @@ from datetime import datetime, date, timedelta
 # 1. 페이지 기본 설정
 st.set_page_config(page_title="PACE MAKER", layout="centered")
 
-# 2. 토스 디자인 시스템(TDS) 및 탭 커스텀 CSS
+# 2. 토스 디자인 시스템(TDS) 커스텀 CSS
 tds_style = """
 <style>
     /* 전체 배경색 및 폰트 */
@@ -22,33 +22,6 @@ tds_style = """
         max-width: 640px !important;
     }
 
-    /* 토스 스타일 세그먼트 탭 버튼 */
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 6px;
-        background-color: #E5E8EB;
-        padding: 4px;
-        border-radius: 14px;
-        margin-bottom: 20px;
-    }
-
-    .stTabs [data-baseweb="tab"] {
-        height: 40px;
-        border-radius: 10px;
-        background-color: transparent;
-        color: #6B7684;
-        font-weight: 600;
-        font-size: 14px;
-        border: none !important;
-        flex: 1;
-        text-align: center;
-    }
-
-    .stTabs [aria-selected="true"] {
-        background-color: #FFFFFF !important;
-        color: #3182F6 !important;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    }
-
     /* 카드 컨테이너 스타일 */
     .tds-card {
         background-color: #FFFFFF;
@@ -57,19 +30,6 @@ tds_style = """
         border: 1px solid #E5E8EB;
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
         margin-bottom: 16px;
-    }
-
-    div[data-testid="stExpander"] {
-        background-color: #FFFFFF !important;
-        border-radius: 20px !important;
-        border: 1px solid #E5E8EB !important;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03) !important;
-        margin-bottom: 16px !important;
-        overflow: hidden;
-    }
-    
-    div[data-testid="stExpander"] > details {
-        border: none !important;
     }
 
     /* 토스 블루 기본 버튼 */
@@ -90,7 +50,17 @@ tds_style = """
         color: #FFFFFF !important;
     }
 
-    /* 삭제 버튼 스타일 */
+    /* 서브 버튼 (홈으로 이동 / 페이지 전환용) */
+    div.sub-btn > button {
+        background-color: #E8F3FF !important;
+        color: #3182F6 !important;
+        border: none !important;
+    }
+    div.sub-btn > button:hover {
+        background-color: #DCEBFF !important;
+    }
+
+    /* 삭제 버튼 */
     div.delete-btn > button {
         background-color: #FFF1F2 !important;
         color: #F43F5E !important;
@@ -99,6 +69,19 @@ tds_style = """
     div.delete-btn > button:hover {
         background-color: #FFE4E6 !important;
         color: #E11D48 !important;
+    }
+
+    div[data-testid="stExpander"] {
+        background-color: #FFFFFF !important;
+        border-radius: 20px !important;
+        border: 1px solid #E5E8EB !important;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03) !important;
+        margin-bottom: 16px !important;
+        overflow: hidden;
+    }
+    
+    div[data-testid="stExpander"] > details {
+        border: none !important;
     }
 
     div[data-testid="stMetricValue"] {
@@ -123,7 +106,7 @@ st.markdown(tds_style, unsafe_allow_html=True)
 
 FILENAME = "tasks.json"
 
-# 데이터 로드
+# 데이터 불러오기
 def load_tasks():
     try:
         with open(FILENAME, "r", encoding="utf-8") as f:
@@ -131,7 +114,7 @@ def load_tasks():
     except (FileNotFoundError, json.JSONDecodeError):
         return []
 
-# 데이터 저장
+# 데이터 저장하기
 def save_tasks(tasks):
     with open(FILENAME, "w", encoding="utf-8") as f:
         json.dump(tasks, f, ensure_ascii=False, indent=4)
@@ -152,25 +135,100 @@ def calculate_valid_days(start_date, end_date, exclude_weekends, custom_rest_day
         
     return max(0, valid_days - custom_rest_days)
 
+# 세션 상태 초기화
 if "tasks" not in st.session_state:
     st.session_state.tasks = load_tasks()
 
-# --- [상단 메인 홈 타이틀] ---
+if "current_page" not in st.session_state:
+    st.session_state.current_page = "home"
+
+# 페이지 이동 함수
+def set_page(page_name):
+    st.session_state.current_page = page_name
+    st.rerun()
+
+# --- [상단 타이틀 헤더] ---
 st.markdown("<h1 style='font-weight: 800; color: #191F28; font-size: 26px; margin-bottom: 4px; text-align: center;'>PACE MAKER</h1>", unsafe_allow_html=True)
 st.markdown("<p style='color: #8B95A1; font-size: 14px; text-align: center; margin-bottom: 24px;'>목표가 틀어져도 괜찮습니다. 오늘 할 일을 유연하게 맞춰드립니다.</p>", unsafe_allow_html=True)
 
-# --- [하단 탭 구성: 해야 할 일 / 과제 등록 / 캘린더] ---
-tab_todo, tab_add, tab_calendar = st.tabs(["해야 할 일", "과제 등록", "캘린더"])
 
 # ==========================================
-# 탭 1: 해야 할 일 (대시보드 및 일일 기록)
+# 1. 홈 화면 (Home)
 # ==========================================
-with tab_todo:
+if st.session_state.current_page == "home":
+    # 학습 현황 요약 카드
+    tasks = st.session_state.tasks
+    total_count = len(tasks)
+    active_count = sum(1 for t in tasks if (t['total_amount'] - t['completed_amount']) > 0)
+    
+    st.markdown("<div class='tds-card'>", unsafe_allow_html=True)
+    st.markdown("<h3 style='font-size: 18px; font-weight: 700; color: #191F28; margin-bottom: 8px;'>학습 현황 요약</h3>", unsafe_allow_html=True)
+    if total_count == 0:
+        st.markdown("<p style='color: #8B95A1; font-size: 14px; margin: 0;'>등록된 과제가 없습니다. 아래 메뉴에서 새로운 과제를 등록해 보세요.</p>", unsafe_allow_html=True)
+    else:
+        st.markdown(f"<p style='color: #4E5968; font-size: 15px; margin: 0;'>현재 <b>{active_count}개</b>의 진행 중인 과제가 있습니다.</p>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown("<p style='font-weight: 700; font-size: 16px; color: #191F28; margin-top: 24px; margin-bottom: 12px;'>메뉴 선택</p>", unsafe_allow_html=True)
+
+    # 메뉴 1: 해야 할 일
+    st.markdown(
+        """
+        <div class="tds-card" style="margin-bottom: 12px; padding: 20px;">
+            <h4 style="margin:0; font-size: 16px; color: #191F28; font-weight: 700;">해야 할 일</h4>
+            <p style="margin: 4px 0 0 0; font-size: 13px; color: #8B95A1;">오늘의 자동 추천 목표 확인 및 일일 진행량 기록</p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+    if st.button("해야 할 일 페이지로 이동", key="btn_go_todo"):
+        set_page("todo")
+
+    # 메뉴 2: 과제 등록
+    st.markdown(
+        """
+        <div class="tds-card" style="margin-top: 12px; margin-bottom: 12px; padding: 20px;">
+            <h4 style="margin:0; font-size: 16px; color: #191F28; font-weight: 700;">과제 등록</h4>
+            <p style="margin: 4px 0 0 0; font-size: 13px; color: #8B95A1;">새로운 과제 이름, 총 분량, 마감일 및 휴식일 설정</p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+    if st.button("과제 등록 페이지로 이동", key="btn_go_add"):
+        set_page("add")
+
+    # 메뉴 3: 캘린더
+    st.markdown(
+        """
+        <div class="tds-card" style="margin-top: 12px; margin-bottom: 12px; padding: 20px;">
+            <h4 style="margin:0; font-size: 16px; color: #191F28; font-weight: 700;">캘린더</h4>
+            <p style="margin: 4px 0 0 0; font-size: 13px; color: #8B95A1;">전체 과제 마감일 및 D-Day 일정표 확인</p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+    if st.button("캘린더 페이지로 이동", key="btn_go_calendar"):
+        set_page("calendar")
+
+
+# ==========================================
+# 2. 해야 할 일 페이지 (To-Do)
+# ==========================================
+elif st.session_state.current_page == "todo":
+    col_nav, col_title = st.columns([1, 2])
+    with col_nav:
+        st.markdown("<div class='sub-btn'>", unsafe_allow_html=True)
+        if st.button("홈으로 돌아가기", key="back_from_todo"):
+            set_page("home")
+        st.markdown("</div>", unsafe_allow_html=True)
+    
+    st.markdown("<h3 style='font-size: 20px; font-weight: 700; color: #191F28; margin-top: 16px; margin-bottom: 16px;'>해야 할 일</h3>", unsafe_allow_html=True)
+
     if not st.session_state.tasks:
         st.markdown(
             """
             <div class="tds-card" style="text-align: center; padding: 40px 20px;">
-                <p style="font-size: 15px; color: #8B95A1; margin: 0;">등록된 과제가 없습니다.<br>'과제 등록' 탭에서 새로운 과제를 추가해 보세요.</p>
+                <p style="font-size: 15px; color: #8B95A1; margin: 0;">등록된 과제가 없습니다.<br>과제 등록 페이지에서 새로운 과제를 추가해 보세요.</p>
             </div>
             """,
             unsafe_allow_html=True
@@ -235,14 +293,20 @@ with tab_todo:
                         st.rerun()
                     st.markdown("</div>", unsafe_allow_html=True)
 
+
 # ==========================================
-# 탭 2: 과제 등록 페이지
+# 3. 과제 등록 페이지 (Add Task)
 # ==========================================
-with tab_add:
-    st.markdown("<div class='tds-card'>", unsafe_allow_html=True)
+elif st.session_state.current_page == "add":
+    st.markdown("<div class='sub-btn'>", unsafe_allow_html=True)
+    if st.button("홈으로 돌아가기", key="back_from_add"):
+        set_page("home")
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown("<div class='tds-card' style='margin-top: 16px;'>", unsafe_allow_html=True)
     st.markdown("<h3 style='font-size: 18px; font-weight: 700; color: #191F28; margin-bottom: 16px;'>새로운 과제 추가</h3>", unsafe_allow_html=True)
     
-    with st.form("add_task_form_tab"):
+    with st.form("add_task_form_page"):
         title = st.text_input("과제 이름", placeholder="예: 수학 문제집 300제")
         unit = st.text_input("분량 단위", value="페이지")
         total_amount = st.number_input("총 분량", min_value=1.0, value=100.0)
@@ -269,20 +333,25 @@ with tab_add:
                 st.session_state.tasks.append(new_task)
                 save_tasks(st.session_state.tasks)
                 st.success(f"'{title}' 과제가 추가되었습니다.")
-                st.rerun()
+                set_page("todo")
     st.markdown("</div>", unsafe_allow_html=True)
 
+
 # ==========================================
-# 탭 3: 캘린더 페이지 (마감 일정 및 타임라인)
+# 4. 캘린더 페이지 (Calendar)
 # ==========================================
-with tab_calendar:
-    st.markdown("<div class='tds-card'>", unsafe_allow_html=True)
+elif st.session_state.current_page == "calendar":
+    st.markdown("<div class='sub-btn'>", unsafe_allow_html=True)
+    if st.button("홈으로 돌아가기", key="back_from_cal"):
+        set_page("home")
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown("<div class='tds-card' style='margin-top: 16px;'>", unsafe_allow_html=True)
     st.markdown("<h3 style='font-size: 18px; font-weight: 700; color: #191F28; margin-bottom: 16px;'>과제 마감 일정표</h3>", unsafe_allow_html=True)
     
     if not st.session_state.tasks:
         st.markdown("<p style='color: #8B95A1; font-size: 14px;'>등록된 과제가 없습니다.</p>", unsafe_allow_html=True)
     else:
-        # 마감일 순서대로 정렬
         sorted_tasks = sorted(st.session_state.tasks, key=lambda x: x['end_date'])
         today = date.today()
         
