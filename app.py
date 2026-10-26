@@ -8,7 +8,7 @@ from datetime import datetime, date
 # 1. 페이지 기본 설정 (이모티콘 전면 금지)
 st.set_page_config(page_title="PACE MAKER", layout="centered")
 
-# 2. 토스 디자인 시스템(TDS) 및 밀착형 캘린더 격자 CSS
+# 2. 토스 디자인 시스템(TDS) 및 캘린더 완벽 격자 CSS
 tds_style = """
 <style>
     /* 전체 배경색 및 폰트 */
@@ -75,40 +75,54 @@ tds_style = """
     }
 
     /* 
-       [캘린더 이격 제거] 7개 열 간격(gap) 완전 0px 처리 및 얇은 실선 밀착 Grid 
+       [핵심 수정] 캘린더 7개 컬럼 간격 0px 강제 통일 및 100% 폭 직사각형 격자
     */
     div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(7)) {
         gap: 0px !important;
+        margin-bottom: 0px !important;
     }
 
     div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(7)) > div[data-testid="stColumn"] {
         padding: 0px !important;
+        min-width: 0 !important;
+        flex: 1 1 0% !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(7)) div[data-testid="stElementWrapper"],
+    div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(7)) div[data-testid="stButton"] {
+        width: 100% !important;
     }
 
     div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(7)) button {
+        width: 100% !important;
+        box-sizing: border-box !important;
         background-color: #FFFFFF !important;
         color: #191F28 !important;
-        border: 1px solid #E5E8EB !important;
+        border: 1px solid #E2E8F0 !important;
         margin: -0.5px !important;
         border-radius: 0px !important;
-        min-height: 95px !important;
-        height: 95px !important;
-        padding: 6px 8px !important;
+        min-height: 85px !important;
+        height: 85px !important;
+        padding: 6px 6px !important;
         text-align: left !important;
-        font-size: 13px !important;
-        font-weight: 500 !important;
-        line-height: 1.4 !important;
+        font-size: 12px !important;
+        line-height: 1.3 !important;
         white-space: pre-wrap !important;
+        word-break: break-all !important;
         box-shadow: none !important;
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: flex-start !important;
-        justify-content: flex-start !important;
+        display: block !important;
     }
 
-    div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(7)) button:hover {
+    div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(7)) button:hover:not(:disabled) {
         background-color: #F8FAFC !important;
         border-color: #3182F6 !important;
+    }
+
+    /* 빈 날짜 비활성화 칸 스타일 */
+    div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(7)) button:disabled {
+        background-color: #FAFAFA !important;
+        border-color: #F1F5F9 !important;
+        cursor: default !important;
     }
 
     div[data-testid="stExpander"] {
@@ -451,7 +465,7 @@ elif st.session_state.current_page == "calendar":
         st.markdown("</div>", unsafe_allow_html=True)
 
     # ------------------------------------------
-    # 4-B. 밀착형 월간 격자 캘린더 (Grid View)
+    # 4-B. 꽉 찬 직사각형 월간 격자 캘린더 (Grid View)
     # ------------------------------------------
     else:
         st.markdown("<div class='sub-btn'>", unsafe_allow_html=True)
@@ -508,11 +522,12 @@ elif st.session_state.current_page == "calendar":
         c = calendar.Calendar(firstweekday=6)
         month_weeks = c.monthdayscalendar(st.session_state.cal_year, st.session_state.cal_month)
 
-        for week in month_weeks:
+        for week_idx, week in enumerate(month_weeks):
             cols = st.columns(7)
             for idx, day in enumerate(week):
                 if day == 0:
-                    cols[idx].write("")
+                    # 빈 날짜 칸도 동일한 형태의 비활성화 격자 버튼 생성
+                    cols[idx].button("", key=f"blank_{week_idx}_{idx}", disabled=True)
                 else:
                     date_str = f"{st.session_state.cal_year:04d}-{st.session_state.cal_month:02d}-{day:02d}"
                     day_tasks = task_map.get(date_str, [])
