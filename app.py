@@ -3,8 +3,97 @@ import json
 import math
 from datetime import datetime, date
 
-# 스트림릿 페이지 설정
+# 1. 페이지 기본 설정
 st.set_page_config(page_title="PACE MAKER", page_icon="🏃‍♂️", layout="centered")
+
+# 2. 토스 디자인 시스템(TDS) 스타일 커스텀 CSS 주입
+tds_style = """
+<style>
+    /* 전체 배경색 및 폰트 설정 */
+    .stApp {
+        background-color: #F2F4F6 !important;
+        font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", sans-serif;
+        color: #191F28;
+    }
+    
+    /* 상단 헤더 영역 여백 조정 */
+    .block-container {
+        padding-top: 2rem !important;
+        padding-bottom: 3rem !important;
+        max-width: 680px !important;
+    }
+
+    /* 토스 스타일 카드 용 컨테이너 */
+    div[data-testid="stVerticalBlock"] > div[style*="flex-direction: column"] > div {
+        border-radius: 20px;
+    }
+
+    /* Expander(카드) 스타일 변경 */
+    div[data-testid="stExpander"] {
+        background-color: #FFFFFF !important;
+        border-radius: 20px !important;
+        border: 1px solid #E5E8EB !important;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03) !important;
+        margin-bottom: 16px !important;
+        overflow: hidden;
+    }
+    
+    div[data-testid="stExpander"] > details {
+        border: none !important;
+    }
+
+    /* 버튼 스타일 (토스 블루) */
+    .stButton > button, div[data-testid="stFormSubmitButton"] > button {
+        background-color: #3182F6 !important;
+        color: #FFFFFF !important;
+        border-radius: 12px !important;
+        border: none !important;
+        font-weight: 600 !important;
+        font-size: 15px !important;
+        padding: 10px 16px !important;
+        width: 100% !important;
+        box-shadow: 0 2px 6px rgba(49, 130, 246, 0.2) !important;
+        transition: all 0.2s ease !important;
+    }
+
+    .stButton > button:hover, div[data-testid="stFormSubmitButton"] > button:hover {
+        background-color: #1B64DA !important;
+        color: #FFFFFF !important;
+    }
+
+    /* 메트릭(숫자 강조) 디자인 */
+    div[data-testid="stMetricValue"] {
+        color: #3182F6 !important;
+        font-size: 26px !important;
+        font-weight: 700 !important;
+    }
+
+    div[data-testid="stMetricLabel"] {
+        color: #8B95A1 !important;
+        font-size: 13px !important;
+        font-weight: 500 !important;
+    }
+
+    /* 사이드바 스타일 */
+    section[data-testid="stSidebar"] {
+        background-color: #FFFFFF !important;
+        border-right: 1px solid #E5E8EB !important;
+    }
+
+    /* 입력 폼 필드 스타일 */
+    input, select {
+        border-radius: 10px !important;
+        border: 1px solid #E5E8EB !important;
+    }
+
+    /* 프로그레스 바 컬러 */
+    div[data-testid="stProgressBar"] > div > div {
+        background-color: #3182F6 !important;
+        border-radius: 10px !important;
+    }
+</style>
+"""
+st.markdown(tds_style, unsafe_allow_html=True)
 
 FILENAME = "tasks.json"
 
@@ -21,17 +110,18 @@ def save_tasks(tasks):
     with open(FILENAME, "w", encoding="utf-8") as f:
         json.dump(tasks, f, ensure_ascii=False, indent=4)
 
-# 세션 상태 데이터 초기화
 if "tasks" not in st.session_state:
     st.session_state.tasks = load_tasks()
 
-# 메인 타이틀
-st.title("🏃‍♂️ PACE MAKER")
-st.caption("계획이 틀어져도 괜찮아요. 오늘 할 일을 알아서 다시 계산해 드립니다!")
+# --- [상단 타이틀 영역] ---
+st.markdown("<h2 style='font-weight: 700; color: #191F28; margin-bottom: 4px;'>🏃‍♂️ PACE MAKER</h2>", unsafe_allow_html=True)
+st.markdown("<p style='color: #8B95A1; font-size: 15px; margin-bottom: 24px;'>목표가 틀어져도 괜찮아요. 오늘 할 일을 유연하게 맞춰드려요.</p>", unsafe_allow_html=True)
 
 # --- [사이드바: 과제 등록] ---
 with st.sidebar:
-    st.header("➕ 새 과제 등록")
+    st.markdown("<h3 style='font-size: 18px; font-weight: 700; color: #191F28;'>➕ 새 과제 추가</h3>", unsafe_allow_html=True)
+    st.caption("새로운 과제나 학습 목표를 등록해 보세요.")
+    
     with st.form("add_task_form"):
         title = st.text_input("과제 이름", placeholder="예: 수학 문제집 300제")
         unit = st.text_input("분량 단위", value="페이지")
@@ -54,47 +144,55 @@ with st.sidebar:
                 }
                 st.session_state.tasks.append(new_task)
                 save_tasks(st.session_state.tasks)
-                st.success(f"'{title}' 과제가 등록되었습니다!")
+                st.success(f"'{title}' 과제가 추가되었습니다.")
                 st.rerun()
 
-# --- [메인 영역: 과제 대시보드 및 수행량 기록] ---
-st.subheader("📊 과제 진행 대시보드")
-
+# --- [메인 영역: 과제 카드 목록] ---
 if not st.session_state.tasks:
-    st.info("👈 왼쪽 사이드바에서 첫 과제를 등록해 보세요!")
+    st.markdown(
+        """
+        <div style="background-color: #FFFFFF; padding: 40px 20px; border-radius: 20px; text-align: center; border: 1px solid #E5E8EB;">
+            <p style="font-size: 16px; color: #8B95A1; margin: 0;">등록된 과제가 없습니다.<br>왼쪽 사이드바에서 첫 과제를 등록해 보세요!</p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 else:
     today = date.today()
     for idx, task in enumerate(st.session_state.tasks):
+        end_date = datetime.strptime(task['end_date'], "%Y-%m-%d").date()
+        remaining_days = (end_date - today).days + 1 - task['rest_days']
+        remaining_amount = task['total_amount'] - task['completed_amount']
+        
+        progress = min(1.0, max(0.0, task['completed_amount'] / task['total_amount']))
+        
         with st.expander(f"📌 **{task['title']}**", expanded=True):
-            end_date = datetime.strptime(task['end_date'], "%Y-%m-%d").date()
-            remaining_days = (end_date - today).days + 1 - task['rest_days']
-            remaining_amount = task['total_amount'] - task['completed_amount']
+            # 진행률 프로그레스 바
+            st.progress(progress)
+            st.markdown(
+                f"<p style='color: #8B95A1; font-size: 13px; text-align: right; margin-top: -8px; margin-bottom: 16px;'>"
+                f"진행률 {progress * 100:.1f}% ({task['completed_amount']:.0f}/{task['total_amount']:.0f} {task['unit']})</p>",
+                unsafe_allow_html=True
+            )
             
-            # 진행률 계산 및 프로그레스 바 표시
-            progress = min(1.0, max(0.0, task['completed_amount'] / task['total_amount']))
-            st.progress(progress, text=f"진행률: {progress * 100:.1f}% ({task['completed_amount']} / {task['total_amount']} {task['unit']})")
+            col1, col2 = st.columns([1, 1])
             
-            col1, col2 = st.columns(2)
-            
-            # 연산 및 상태 출력
             with col1:
                 if remaining_amount <= 0:
                     st.balloons()
                     st.success("🎉 과제를 모두 완료했습니다!")
                 elif remaining_days <= 0:
-                    st.error("🚨 마감 기한이 지났습니다!")
+                    st.error("🚨 마감 기한이 지났습니다.")
                 else:
                     daily_target = math.ceil(remaining_amount / remaining_days)
-                    st.metric(label="오늘의 PACE MAKER 목표", value=f"하루 {daily_target} {task['unit']}")
-                    st.caption(f"남은 유효 기간: D-{remaining_days}일 (휴식일 차감)")
+                    st.metric(label="오늘의 추천 목표", value=f"{daily_target} {task['unit']}")
+                    st.caption(f"D-{remaining_days}일 남음 (휴식일 제외)")
 
-            # 수행량 입력
             with col2:
                 if remaining_amount > 0 and remaining_days > 0:
-                    st.write("**오늘 진행한 양 입력**")
-                    today_add = st.number_input(f"진행량 ({task['unit']})", min_value=0.0, key=f"input_{idx}")
-                    if st.button("기록 반영", key=f"btn_{idx}"):
+                    today_add = st.number_input(f"오늘 한 양 ({task['unit']})", min_value=0.0, key=f"input_{idx}", value=0.0)
+                    if st.button("기록하기", key=f"btn_{idx}"):
                         task['completed_amount'] += today_add
                         save_tasks(st.session_state.tasks)
-                        st.success("기록되었습니다!")
+                        st.success("기록되었어요!")
                         st.rerun()
