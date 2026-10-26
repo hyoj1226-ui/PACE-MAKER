@@ -8,7 +8,7 @@ from datetime import datetime, date
 # 1. 페이지 기본 설정 (이모티콘 전면 금지)
 st.set_page_config(page_title="PACE MAKER", layout="centered")
 
-# 2. 토스 디자인 시스템(TDS) 및 커스텀 CSS
+# 2. 토스 디자인 시스템(TDS) 및 홈/캘린더 커스텀 CSS
 tds_style = """
 <style>
     /* 전체 배경색 및 폰트 */
@@ -31,24 +31,7 @@ tds_style = """
         padding: 24px;
         border: 1px solid #E5E8EB;
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
-        margin-bottom: 12px;
-    }
-
-    /* 주요 실행 버튼 (토스 블루) */
-    .stButton > button, div[data-testid="stFormSubmitButton"] > button {
-        background-color: #3182F6;
-        color: #FFFFFF;
-        border-radius: 12px;
-        border: none;
-        font-weight: 600;
-        font-size: 15px;
-        padding: 12px 16px;
-        width: 100%;
-        transition: all 0.2s ease;
-    }
-
-    .stButton > button:hover, div[data-testid="stFormSubmitButton"] > button:hover {
-        background-color: #1B64DA;
+        margin-bottom: 20px;
     }
 
     /* 서브 버튼 (홈으로 이동 / 월 변경) */
@@ -78,22 +61,64 @@ tds_style = """
         color: #E11D48 !important;
     }
 
-    /* 캘린더 7열 그리드 레이아웃 CSS */
-    div[data-testid="stHorizontalBlock"] {
-        gap: 4px !important;
+    /* 
+       [홈 화면 3열 가로 버튼 전용 CSS]
+       설명 없이 카드 형태로 누를 수 있는 3개의 큰 버튼
+    */
+    div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(3)) {
+        gap: 12px !important;
     }
 
-    div[data-testid="stColumn"] {
-        padding: 0px !important;
-    }
-
-    div[data-testid="stColumn"] > div,
-    div[data-testid="stColumn"] div[data-testid="stElementWrapper"],
-    div[data-testid="stColumn"] div[data-testid="stButton"] {
+    div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(3)) button {
+        background-color: #FFFFFF !important;
+        color: #191F28 !important;
+        border: 1px solid #E5E8EB !important;
+        border-radius: 18px !important;
+        height: 110px !important;
+        min-height: 110px !important;
+        font-size: 17px !important;
+        font-weight: 700 !important;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03) !important;
+        transition: all 0.2s ease !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
         width: 100% !important;
     }
 
-    div[data-testid="stColumn"] button {
+    div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(3)) button:hover {
+        background-color: #F8FAFC !important;
+        border-color: #3182F6 !important;
+        color: #3182F6 !important;
+    }
+
+    /* 일반 폼 제출 및 서브페이지 버튼 */
+    .stButton > button, div[data-testid="stFormSubmitButton"] > button {
+        background-color: #3182F6;
+        color: #FFFFFF;
+        border-radius: 12px;
+        border: none;
+        font-weight: 600;
+        font-size: 14px;
+        padding: 10px 16px;
+        width: 100%;
+        transition: all 0.2s ease;
+    }
+
+    .stButton > button:hover, div[data-testid="stFormSubmitButton"] > button:hover {
+        background-color: #1B64DA;
+    }
+
+    /* 캘린더 7열 그리드 CSS */
+    div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(7)) {
+        gap: 4px !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(7)) > div[data-testid="stColumn"] {
+        padding: 0px !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(7)) button {
         width: 100% !important;
         background-color: #FFFFFF !important;
         color: #191F28 !important;
@@ -111,12 +136,12 @@ tds_style = """
         display: block !important;
     }
 
-    div[data-testid="stColumn"] button:hover:not(:disabled) {
+    div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(7)) button:hover:not(:disabled) {
         background-color: #F8FAFC !important;
         border-color: #3182F6 !important;
     }
 
-    div[data-testid="stColumn"] button:disabled {
+    div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(7)) button:disabled {
         background-color: #FAFAFA !important;
         border-color: #F1F5F9 !important;
         cursor: default !important;
@@ -217,19 +242,19 @@ def set_page(page_name):
 # 1. 홈 화면 (Home)
 # ==========================================
 if st.session_state.current_page == "home":
-    # PM 로고 및 헤더 영역
+    # 대형 PM 로고 및 대형 PACE MAKER 타이틀
     st.markdown(
         """
-        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 10px; margin-bottom: 28px;">
-            <div style="background-color: #3182F6; color: #FFFFFF; font-weight: 900; font-size: 24px; width: 56px; height: 56px; border-radius: 18px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(49, 130, 246, 0.35); margin-bottom: 14px; letter-spacing: -0.5px;">PM</div>
-            <h1 style="font-weight: 800; color: #191F28; font-size: 28px; margin: 0 0 6px 0; text-align: center;">PACE MAKER</h1>
-            <p style="color: #8B95A1; font-size: 14px; margin: 0; text-align: center;">목표가 틀어져도 괜찮습니다. 오늘 할 일을 유연하게 맞춰드립니다.</p>
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 16px; margin-bottom: 32px;">
+            <div style="background-color: #3182F6; color: #FFFFFF; font-weight: 900; font-size: 32px; width: 72px; height: 72px; border-radius: 22px; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 20px rgba(49, 130, 246, 0.35); margin-bottom: 16px; letter-spacing: -1px;">PM</div>
+            <h1 style="font-weight: 900; color: #191F28; font-size: 36px; margin: 0 0 8px 0; text-align: center; letter-spacing: -0.5px;">PACE MAKER</h1>
+            <p style="color: #8B95A1; font-size: 15px; margin: 0; text-align: center;">목표가 틀어져도 괜찮습니다. 오늘 할 일을 유연하게 맞춰드립니다.</p>
         </div>
         """,
         unsafe_allow_html=True
     )
     
-    # 현황 요약
+    # 학습 현황 요약
     tasks = st.session_state.tasks
     total_count = len(tasks)
     active_count = sum(1 for t in tasks if (int(t['total_amount']) - int(t['completed_amount'])) > 0)
@@ -242,48 +267,20 @@ if st.session_state.current_page == "home":
         st.markdown(f"<p style='color: #4E5968; font-size: 15px; margin: 0;'>현재 <b>{active_count}개</b>의 진행 중인 과제가 있습니다.</p>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
-    st.markdown("<p style='font-weight: 700; font-size: 16px; color: #191F28; margin-top: 24px; margin-bottom: 12px;'>메뉴 선택</p>", unsafe_allow_html=True)
+    # 3개 항목 가로 배치 (버튼 자체가 항목 클릭 카드 역할)
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        if st.button("해야 할 일", key="btn_home_todo"):
+            set_page("todo")
 
-    # 3개 메뉴 칸 (설명 카드 + 단일 직관 버튼)
-    # 메뉴 1: 해야 할 일
-    st.markdown(
-        """
-        <div class="tds-card" style="margin-bottom: 8px; padding: 20px 20px 14px 20px;">
-            <h4 style="margin:0 0 4px 0; font-size: 16px; color: #191F28; font-weight: 700;">해야 할 일</h4>
-            <p style="margin: 0; font-size: 13px; color: #8B95A1;">오늘의 자동 추천 목표 확인 및 일일 진행량 기록</p>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-    if st.button("해야 할 일", key="btn_home_todo"):
-        set_page("todo")
+    with col2:
+        if st.button("과제 등록", key="btn_home_add"):
+            set_page("add")
 
-    # 메뉴 2: 과제 등록
-    st.markdown(
-        """
-        <div class="tds-card" style="margin-top: 16px; margin-bottom: 8px; padding: 20px 20px 14px 20px;">
-            <h4 style="margin:0 0 4px 0; font-size: 16px; color: #191F28; font-weight: 700;">과제 등록</h4>
-            <p style="margin: 0; font-size: 13px; color: #8B95A1;">새로운 과제 이름, 총 분량 및 마감일 설정</p>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-    if st.button("과제 등록", key="btn_home_add"):
-        set_page("add")
-
-    # 메뉴 3: 캘린더
-    st.markdown(
-        """
-        <div class="tds-card" style="margin-top: 16px; margin-bottom: 8px; padding: 20px 20px 14px 20px;">
-            <h4 style="margin:0 0 4px 0; font-size: 16px; color: #191F28; font-weight: 700;">캘린더</h4>
-            <p style="margin: 0; font-size: 13px; color: #8B95A1;">전체 과제 마감일 및 D-Day 일정표 확인</p>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-    if st.button("캘린더", key="btn_home_cal"):
-        st.session_state.selected_calendar_date = None
-        set_page("calendar")
+    with col3:
+        if st.button("캘린더", key="btn_home_cal"):
+            st.session_state.selected_calendar_date = None
+            set_page("calendar")
 
 
 # ==========================================
@@ -295,7 +292,7 @@ elif st.session_state.current_page == "todo":
         set_page("home")
     st.markdown("</div>", unsafe_allow_html=True)
     
-    st.markdown("<h3 style='font-size: 20px; font-weight: 700; color: #191F28; margin-top: 16px; margin-bottom: 16px;'>해야 할 일</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='font-size: 22px; font-weight: 800; color: #191F28; margin-top: 16px; margin-bottom: 16px;'>해야 할 일</h3>", unsafe_allow_html=True)
 
     if not st.session_state.tasks:
         st.markdown(
