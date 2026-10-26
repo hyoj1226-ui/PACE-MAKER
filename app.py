@@ -3,12 +3,13 @@ import json
 import math
 from datetime import datetime, date, timedelta
 
-# 1. 페이지 기본 설정 (이모티콘 제거)
+# 1. 페이지 기본 설정
 st.set_page_config(page_title="PACE MAKER", layout="centered")
 
-# 2. 토스 디자인 시스템(TDS) 커스텀 CSS
+# 2. 토스 디자인 시스템(TDS) 및 탭 커스텀 CSS
 tds_style = """
 <style>
+    /* 전체 배경색 및 폰트 */
     .stApp {
         background-color: #F2F4F6 !important;
         font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", sans-serif;
@@ -16,9 +17,46 @@ tds_style = """
     }
     
     .block-container {
-        padding-top: 2rem !important;
+        padding-top: 2.5rem !important;
         padding-bottom: 3rem !important;
-        max-width: 680px !important;
+        max-width: 640px !important;
+    }
+
+    /* 토스 스타일 세그먼트 탭 버튼 */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 6px;
+        background-color: #E5E8EB;
+        padding: 4px;
+        border-radius: 14px;
+        margin-bottom: 20px;
+    }
+
+    .stTabs [data-baseweb="tab"] {
+        height: 40px;
+        border-radius: 10px;
+        background-color: transparent;
+        color: #6B7684;
+        font-weight: 600;
+        font-size: 14px;
+        border: none !important;
+        flex: 1;
+        text-align: center;
+    }
+
+    .stTabs [aria-selected="true"] {
+        background-color: #FFFFFF !important;
+        color: #3182F6 !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    /* 카드 컨테이너 스타일 */
+    .tds-card {
+        background-color: #FFFFFF;
+        border-radius: 20px;
+        padding: 24px;
+        border: 1px solid #E5E8EB;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+        margin-bottom: 16px;
     }
 
     div[data-testid="stExpander"] {
@@ -42,7 +80,7 @@ tds_style = """
         border: none !important;
         font-weight: 600 !important;
         font-size: 14px !important;
-        padding: 8px 16px !important;
+        padding: 10px 16px !important;
         width: 100% !important;
         transition: all 0.2s ease !important;
     }
@@ -52,7 +90,7 @@ tds_style = """
         color: #FFFFFF !important;
     }
 
-    /* 삭제 버튼 전용 서브 스타일 */
+    /* 삭제 버튼 스타일 */
     div.delete-btn > button {
         background-color: #FFF1F2 !important;
         color: #F43F5E !important;
@@ -75,11 +113,6 @@ tds_style = """
         font-weight: 500 !important;
     }
 
-    section[data-testid="stSidebar"] {
-        background-color: #FFFFFF !important;
-        border-right: 1px solid #E5E8EB !important;
-    }
-
     div[data-testid="stProgressBar"] > div > div {
         background-color: #3182F6 !important;
         border-radius: 10px !important;
@@ -90,7 +123,7 @@ st.markdown(tds_style, unsafe_allow_html=True)
 
 FILENAME = "tasks.json"
 
-# [저장 모듈] 데이터 불러오기
+# 데이터 로드
 def load_tasks():
     try:
         with open(FILENAME, "r", encoding="utf-8") as f:
@@ -98,12 +131,12 @@ def load_tasks():
     except (FileNotFoundError, json.JSONDecodeError):
         return []
 
-# [저장 모듈] 데이터 저장하기
+# 데이터 저장
 def save_tasks(tasks):
     with open(FILENAME, "w", encoding="utf-8") as f:
         json.dump(tasks, f, ensure_ascii=False, indent=4)
 
-# 유효 작업 일수 계산 로직 (주말 제외 옵션 포함)
+# 유효 작업 일수 계산 로직
 def calculate_valid_days(start_date, end_date, exclude_weekends, custom_rest_days):
     if start_date > end_date:
         return 0
@@ -111,7 +144,6 @@ def calculate_valid_days(start_date, end_date, exclude_weekends, custom_rest_day
     current = start_date
     valid_days = 0
     while current <= end_date:
-        # 주말 제외 체크 옵션이 켜져 있으면 토요일(5), 일요일(6) 제외
         if exclude_weekends and current.weekday() >= 5:
             pass
         else:
@@ -123,21 +155,100 @@ def calculate_valid_days(start_date, end_date, exclude_weekends, custom_rest_day
 if "tasks" not in st.session_state:
     st.session_state.tasks = load_tasks()
 
-# --- [상단 타이틀 영역] ---
-st.markdown("<h2 style='font-weight: 700; color: #191F28; margin-bottom: 4px;'>PACE MAKER</h2>", unsafe_allow_html=True)
-st.markdown("<p style='color: #8B95A1; font-size: 15px; margin-bottom: 24px;'>목표가 틀어져도 괜찮습니다. 오늘 할 일을 유연하게 맞춰드립니다.</p>", unsafe_allow_html=True)
+# --- [상단 메인 홈 타이틀] ---
+st.markdown("<h1 style='font-weight: 800; color: #191F28; font-size: 26px; margin-bottom: 4px; text-align: center;'>PACE MAKER</h1>", unsafe_allow_html=True)
+st.markdown("<p style='color: #8B95A1; font-size: 14px; text-align: center; margin-bottom: 24px;'>목표가 틀어져도 괜찮습니다. 오늘 할 일을 유연하게 맞춰드립니다.</p>", unsafe_allow_html=True)
 
-# --- [사이드바: 과제 추가 모듈] ---
-with st.sidebar:
-    st.markdown("<h3 style='font-size: 18px; font-weight: 700; color: #191F28;'>새 과제 추가</h3>", unsafe_allow_html=True)
+# --- [하단 탭 구성: 해야 할 일 / 과제 등록 / 캘린더] ---
+tab_todo, tab_add, tab_calendar = st.tabs(["해야 할 일", "과제 등록", "캘린더"])
+
+# ==========================================
+# 탭 1: 해야 할 일 (대시보드 및 일일 기록)
+# ==========================================
+with tab_todo:
+    if not st.session_state.tasks:
+        st.markdown(
+            """
+            <div class="tds-card" style="text-align: center; padding: 40px 20px;">
+                <p style="font-size: 15px; color: #8B95A1; margin: 0;">등록된 과제가 없습니다.<br>'과제 등록' 탭에서 새로운 과제를 추가해 보세요.</p>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+    else:
+        today = date.today()
+        for idx, task in enumerate(st.session_state.tasks):
+            end_date = datetime.strptime(task['end_date'], "%Y-%m-%d").date()
+            exclude_weekends = task.get('exclude_weekends', False)
+            rest_days = task.get('rest_days', 0)
+            
+            remaining_days = calculate_valid_days(today, end_date, exclude_weekends, rest_days)
+            remaining_amount = task['total_amount'] - task['completed_amount']
+            progress = min(1.0, max(0.0, task['completed_amount'] / task['total_amount']))
+            
+            with st.expander(f"**{task['title']}**", expanded=True):
+                st.progress(progress)
+                st.markdown(
+                    f"<p style='color: #8B95A1; font-size: 13px; text-align: right; margin-top: -8px; margin-bottom: 16px;'>"
+                    f"진행률 {progress * 100:.1f}% ({task['completed_amount']:.0f}/{task['total_amount']:.0f} {task['unit']})</p>",
+                    unsafe_allow_html=True
+                )
+                
+                col1, col2 = st.columns([1, 1])
+                
+                with col1:
+                    if remaining_amount <= 0:
+                        st.success("완료된 과제입니다.")
+                    elif end_date < today:
+                        st.error("마감 기한이 지났습니다.")
+                    elif remaining_days <= 0:
+                        st.error("유효 작업 일수가 부족합니다.")
+                    else:
+                        daily_target = math.ceil(remaining_amount / remaining_days)
+                        st.metric(label="오늘의 추천 목표", value=f"{daily_target} {task['unit']}")
+                        
+                        option_info = []
+                        if exclude_weekends:
+                            option_info.append("주말 제외")
+                        if rest_days > 0:
+                            option_info.append(f"휴식일 {rest_days}일")
+                        
+                        info_str = f"남은 유효 기간 D-{remaining_days}일"
+                        if option_info:
+                            info_str += f" ({', '.join(option_info)})"
+                        st.caption(info_str)
+
+                with col2:
+                    if remaining_amount > 0 and end_date >= today and remaining_days > 0:
+                        today_add = st.number_input(f"오늘 한 양 ({task['unit']})", min_value=0.0, key=f"input_{idx}", value=0.0)
+                        if st.button("기록하기", key=f"btn_{idx}"):
+                            task['completed_amount'] += today_add
+                            save_tasks(st.session_state.tasks)
+                            st.success("기록되었습니다.")
+                            st.rerun()
+                    
+                    st.markdown("<div class='delete-btn' style='margin-top: 8px;'>", unsafe_allow_html=True)
+                    if st.button("과제 삭제", key=f"del_{idx}"):
+                        st.session_state.tasks.pop(idx)
+                        save_tasks(st.session_state.tasks)
+                        st.success("과제가 삭제되었습니다.")
+                        st.rerun()
+                    st.markdown("</div>", unsafe_allow_html=True)
+
+# ==========================================
+# 탭 2: 과제 등록 페이지
+# ==========================================
+with tab_add:
+    st.markdown("<div class='tds-card'>", unsafe_allow_html=True)
+    st.markdown("<h3 style='font-size: 18px; font-weight: 700; color: #191F28; margin-bottom: 16px;'>새로운 과제 추가</h3>", unsafe_allow_html=True)
     
-    with st.form("add_task_form"):
+    with st.form("add_task_form_tab"):
         title = st.text_input("과제 이름", placeholder="예: 수학 문제집 300제")
         unit = st.text_input("분량 단위", value="페이지")
         total_amount = st.number_input("총 분량", min_value=1.0, value=100.0)
         end_date = st.date_input("마감일")
         
-        st.markdown("<p style='font-size: 13px; color: #8B95A1; margin-top: 8px; margin-bottom: 0px;'>일정 옵션</p>", unsafe_allow_html=True)
+        st.markdown("<p style='font-size: 13px; color: #8B95A1; margin-top: 12px; margin-bottom: 4px;'>일정 옵션</p>", unsafe_allow_html=True)
         exclude_weekends = st.checkbox("주말(토/일) 자동 제외", value=False)
         rest_days = st.number_input("추가 휴식일 수", min_value=0, value=0)
         
@@ -159,74 +270,48 @@ with st.sidebar:
                 save_tasks(st.session_state.tasks)
                 st.success(f"'{title}' 과제가 추가되었습니다.")
                 st.rerun()
+    st.markdown("</div>", unsafe_allow_html=True)
 
-# --- [메인 영역: 과제 대시보드 및 관리] ---
-if not st.session_state.tasks:
-    st.markdown(
-        """
-        <div style="background-color: #FFFFFF; padding: 40px 20px; border-radius: 20px; text-align: center; border: 1px solid #E5E8EB;">
-            <p style="font-size: 15px; color: #8B95A1; margin: 0;">등록된 과제가 없습니다.<br>사이드바에서 새로운 과제를 등록해 보세요.</p>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-else:
-    today = date.today()
-    for idx, task in enumerate(st.session_state.tasks):
-        end_date = datetime.strptime(task['end_date'], "%Y-%m-%d").date()
-        exclude_weekends = task.get('exclude_weekends', False)
-        rest_days = task.get('rest_days', 0)
+# ==========================================
+# 탭 3: 캘린더 페이지 (마감 일정 및 타임라인)
+# ==========================================
+with tab_calendar:
+    st.markdown("<div class='tds-card'>", unsafe_allow_html=True)
+    st.markdown("<h3 style='font-size: 18px; font-weight: 700; color: #191F28; margin-bottom: 16px;'>과제 마감 일정표</h3>", unsafe_allow_html=True)
+    
+    if not st.session_state.tasks:
+        st.markdown("<p style='color: #8B95A1; font-size: 14px;'>등록된 과제가 없습니다.</p>", unsafe_allow_html=True)
+    else:
+        # 마감일 순서대로 정렬
+        sorted_tasks = sorted(st.session_state.tasks, key=lambda x: x['end_date'])
+        today = date.today()
         
-        remaining_days = calculate_valid_days(today, end_date, exclude_weekends, rest_days)
-        remaining_amount = task['total_amount'] - task['completed_amount']
-        progress = min(1.0, max(0.0, task['completed_amount'] / task['total_amount']))
-        
-        with st.expander(f"**{task['title']}**", expanded=True):
-            st.progress(progress)
+        for task in sorted_tasks:
+            end_date = datetime.strptime(task['end_date'], "%Y-%m-%d").date()
+            d_day = (end_date - today).days
+            
+            if d_day < 0:
+                d_day_str = f"기한 지남 (D+{abs(d_day)})"
+                tag_style = "background-color: #FFF1F2; color: #F43F5E;"
+            elif d_day == 0:
+                d_day_str = "오늘 마감 (D-Day)"
+                tag_style = "background-color: #FFF7ED; color: #EA580C;"
+            else:
+                d_day_str = f"D-{d_day}"
+                tag_style = "background-color: #E8F3FF; color: #3182F6;"
+            
             st.markdown(
-                f"<p style='color: #8B95A1; font-size: 13px; text-align: right; margin-top: -8px; margin-bottom: 16px;'>"
-                f"진행률 {progress * 100:.1f}% ({task['completed_amount']:.0f}/{task['total_amount']:.0f} {task['unit']})</p>",
+                f"""
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #F2F4F6;">
+                    <div>
+                        <p style="font-weight: 600; font-size: 15px; margin: 0; color: #191F28;">{task['title']}</p>
+                        <p style="font-size: 13px; color: #8B95A1; margin: 2px 0 0 0;">마감일: {task['end_date']} | 총 {task['total_amount']:.0f} {task['unit']}</p>
+                    </div>
+                    <span style="font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 8px; {tag_style}">
+                        {d_day_str}
+                    </span>
+                </div>
+                """,
                 unsafe_allow_html=True
             )
-            
-            col1, col2 = st.columns([1, 1])
-            
-            with col1:
-                if remaining_amount <= 0:
-                    st.success("완료된 과제입니다.")
-                elif end_date < today:
-                    st.error("마감 기한이 지났습니다.")
-                elif remaining_days <= 0:
-                    st.error("유효 작업 일수가 부족합니다.")
-                else:
-                    daily_target = math.ceil(remaining_amount / remaining_days)
-                    st.metric(label="오늘의 추천 목표", value=f"{daily_target} {task['unit']}")
-                    
-                    option_info = []
-                    if exclude_weekends:
-                        option_info.append("주말 제외")
-                    if rest_days > 0:
-                        option_info.append(f"휴식일 {rest_days}일")
-                    
-                    info_str = f"남은 유효 기간 D-{remaining_days}일"
-                    if option_info:
-                        info_str += f" ({', '.join(option_info)})"
-                    st.caption(info_str)
-
-            with col2:
-                if remaining_amount > 0 and end_date >= today and remaining_days > 0:
-                    today_add = st.number_input(f"오늘 한 양 ({task['unit']})", min_value=0.0, key=f"input_{idx}", value=0.0)
-                    if st.button("기록하기", key=f"btn_{idx}"):
-                        task['completed_amount'] += today_add
-                        save_tasks(st.session_state.tasks)
-                        st.success("기록되었습니다.")
-                        st.rerun()
-                
-                # 과제 삭제 버튼
-                st.markdown("<div class='delete-btn' style='margin-top: 8px;'>", unsafe_allow_html=True)
-                if st.button("과제 삭제", key=f"del_{idx}"):
-                    st.session_state.tasks.pop(idx)
-                    save_tasks(st.session_state.tasks)
-                    st.success("과제가 삭제되었습니다.")
-                    st.rerun()
-                st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
