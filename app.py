@@ -5,10 +5,10 @@ import re
 import calendar
 from datetime import datetime, date
 
-# 1. 페이지 기본 설정
+# 1. 페이지 기본 설정 (이모티콘 전면 금지)
 st.set_page_config(page_title="PACE MAKER", layout="centered")
 
-# 2. 토스 디자인 시스템(TDS) 및 네이버 캘린더 스타일 CSS
+# 2. 토스 디자인 시스템(TDS) 및 캘린더 격자 전용 CSS
 tds_style = """
 <style>
     /* 전체 배경색 및 폰트 */
@@ -21,7 +21,7 @@ tds_style = """
     .block-container {
         padding-top: 2rem !important;
         padding-bottom: 3rem !important;
-        max-width: 680px !important;
+        max-width: 720px !important;
     }
 
     /* 카드 컨테이너 스타일 */
@@ -34,25 +34,25 @@ tds_style = """
         margin-bottom: 16px;
     }
 
-    /* 토스 블루 기본 버튼 */
+    /* 일반 폼 제출 및 주요 버튼 (토스 블루) */
     .stButton > button, div[data-testid="stFormSubmitButton"] > button {
-        background-color: #3182F6 !important;
-        color: #FFFFFF !important;
-        border-radius: 12px !important;
-        border: none !important;
-        font-weight: 600 !important;
-        font-size: 14px !important;
-        padding: 10px 16px !important;
-        width: 100% !important;
-        transition: all 0.2s ease !important;
+        background-color: #3182F6;
+        color: #FFFFFF;
+        border-radius: 12px;
+        border: none;
+        font-weight: 600;
+        font-size: 14px;
+        padding: 10px 16px;
+        width: 100%;
+        transition: all 0.2s ease;
     }
 
     .stButton > button:hover, div[data-testid="stFormSubmitButton"] > button:hover {
-        background-color: #1B64DA !important;
-        color: #FFFFFF !important;
+        background-color: #1B64DA;
+        color: #FFFFFF;
     }
 
-    /* 서브 버튼 (홈으로 이동 / 월 변경용) */
+    /* 서브 버튼 (홈으로 이동 / 월 변경) */
     div.sub-btn > button {
         background-color: #E8F3FF !important;
         color: #3182F6 !important;
@@ -73,24 +73,29 @@ tds_style = """
         color: #E11D48 !important;
     }
 
-    /* 달력 그리드 칸 커스텀 (이미지 스타일 구현) */
+    /* 
+      [핵심 수정] 캘린더 격자(Grid) 셀 버튼 CSS 
+      파란색 배경을 완전히 지우고 깔끔한 흰색 달력 칸으로 강제 재설정
+    */
     div.cal-cell > button {
         background-color: #FFFFFF !important;
         color: #191F28 !important;
-        border: 1px solid #E5E8EB !important;
-        border-radius: 8px !important;
-        min-height: 85px !important;
-        padding: 6px 4px !important;
+        border: 1px solid #E2E8F0 !important;
+        border-radius: 0px !important;
+        min-height: 100px !important;
+        height: 100px !important;
+        padding: 6px 6px !important;
         text-align: left !important;
         font-size: 12px !important;
         line-height: 1.4 !important;
         white-space: pre-wrap !important;
-        word-break: break-all !important;
         box-shadow: none !important;
+        width: 100% !important;
     }
+    
     div.cal-cell > button:hover {
+        background-color: #F8FAFC !important;
         border-color: #3182F6 !important;
-        background-color: #F8F9FA !important;
     }
 
     div[data-testid="stExpander"] {
@@ -353,7 +358,7 @@ elif st.session_state.current_page == "add":
 
 
 # ==========================================
-# 4. 캘린더 페이지 (Calendar)
+# 4. 캘린더 페이지 (Calendar - 깔끔한 격자형)
 # ==========================================
 elif st.session_state.current_page == "calendar":
     
@@ -363,7 +368,6 @@ elif st.session_state.current_page == "calendar":
     if st.session_state.selected_calendar_date is not None:
         selected_date_str = st.session_state.selected_calendar_date
         
-        # 뒤로가기 버튼
         st.markdown("<div class='sub-btn'>", unsafe_allow_html=True)
         if st.button("캘린더로 돌아가기", key="back_to_cal_grid"):
             st.session_state.selected_calendar_date = None
@@ -373,7 +377,6 @@ elif st.session_state.current_page == "calendar":
         st.markdown(f"<h2 style='font-size: 22px; font-weight: 800; color: #191F28; margin-bottom: 4px;'>{selected_date_str} 마감 과제 상세</h2>", unsafe_allow_html=True)
         st.markdown("<p style='color: #8B95A1; font-size: 14px; margin-bottom: 24px;'>선택하신 날짜에 마감되는 과제의 상세 현황입니다.</p>", unsafe_allow_html=True)
 
-        # 해당 날짜 과제 추출
         day_tasks = [t for t in st.session_state.tasks if t['end_date'] == selected_date_str]
         
         if not day_tasks:
@@ -426,7 +429,6 @@ elif st.session_state.current_page == "calendar":
                         
                         st.markdown("<div class='delete-btn' style='margin-top: 8px;'>", unsafe_allow_html=True)
                         if st.button("과제 삭제", key=f"cal_dt_del_{idx}"):
-                            # 실제 과제 목록에서 찾아 삭제
                             st.session_state.tasks = [t for t in st.session_state.tasks if not (t['title'] == task['title'] and t['end_date'] == task['end_date'])]
                             save_tasks(st.session_state.tasks)
                             st.success("과제가 삭제되었습니다.")
@@ -434,7 +436,7 @@ elif st.session_state.current_page == "calendar":
         st.markdown("</div>", unsafe_allow_html=True)
 
     # ------------------------------------------
-    # 4-B. 날짜 미선택 시: 깔끔한 큰 월간 캘린더 화면 (Grid View)
+    # 4-B. 날짜 미선택 시: 깔끔한 격자형 월간 달력
     # ------------------------------------------
     else:
         st.markdown("<div class='sub-btn'>", unsafe_allow_html=True)
@@ -444,7 +446,7 @@ elif st.session_state.current_page == "calendar":
 
         st.markdown("<div class='tds-card' style='margin-top: 16px;'>", unsafe_allow_html=True)
         
-        # 상단 월 변경 컨트롤
+        # 상단 연월 이동
         col_prev, col_title, col_next = st.columns([1, 3, 1])
         with col_prev:
             st.markdown("<div class='sub-btn'>", unsafe_allow_html=True)
@@ -481,7 +483,7 @@ elif st.session_state.current_page == "calendar":
                 task_map[ed] = []
             task_map[ed].append(task)
 
-        # 요일 헤더 (일~토, 첨부 이미지 색상 반영)
+        # 요일 헤더 (일~토)
         weekdays = ["일", "월", "화", "수", "목", "금", "토"]
         col_head = st.columns(7)
         for idx, day_name in enumerate(weekdays):
@@ -491,10 +493,9 @@ elif st.session_state.current_page == "calendar":
                 unsafe_allow_html=True
             )
 
-        # 달력 그리드 출력 (칸 내부에 과제 제목만 표시)
+        # 달력 격자 출력 (파란색 알약 제거 및 얇은 실선 격자 적용)
         c = calendar.Calendar(firstweekday=6)
         month_weeks = c.monthdayscalendar(st.session_state.cal_year, st.session_state.cal_month)
-        today_str = today_obj.strftime("%Y-%m-%d")
 
         for week in month_weeks:
             cols = st.columns(7)
@@ -505,7 +506,7 @@ elif st.session_state.current_page == "calendar":
                     date_str = f"{st.session_state.cal_year:04d}-{st.session_state.cal_month:02d}-{day:02d}"
                     day_tasks = task_map.get(date_str, [])
                     
-                    # 날짜 칸 레이아웃 구성 (과제 제목만 표기)
+                    # 라벨: 날짜(좌상단) + 과제 제목 목록
                     cell_label = f"{day}\n"
                     if day_tasks:
                         task_titles = []
@@ -513,7 +514,7 @@ elif st.session_state.current_page == "calendar":
                             t_name = t['title']
                             if len(t_name) > 6:
                                 t_name = t_name[:5] + ".."
-                            task_titles.append(f"• {t_name}")
+                            task_titles.append(f"▪ {t_name}")
                         cell_label += "\n".join(task_titles)
                         if len(day_tasks) > 2:
                             cell_label += f"\n+{len(day_tasks)-2}개"
