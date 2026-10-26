@@ -8,7 +8,7 @@ from datetime import datetime, date
 # 1. 페이지 기본 설정 (이모티콘 전면 금지)
 st.set_page_config(page_title="PACE MAKER", layout="centered")
 
-# 2. 토스 디자인 시스템(TDS) 및 캘린더 전용 격자 CSS
+# 2. 토스 디자인 시스템(TDS) 및 밀착형 캘린더 격자 CSS
 tds_style = """
 <style>
     /* 전체 배경색 및 폰트 */
@@ -75,13 +75,21 @@ tds_style = """
     }
 
     /* 
-       [핵심 수정] 캘린더 7개 열(월간 그리드) 내부의 버튼을 파란색 알약에서
-       완전한 흰색 직사각형 달력 칸으로 변환하는 CSS
+       [캘린더 이격 제거] 7개 열 간격(gap) 완전 0px 처리 및 얇은 실선 밀착 Grid 
     */
+    div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(7)) {
+        gap: 0px !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(7)) > div[data-testid="stColumn"] {
+        padding: 0px !important;
+    }
+
     div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(7)) button {
         background-color: #FFFFFF !important;
         color: #191F28 !important;
-        border: 1px solid #E2E8F0 !important;
+        border: 1px solid #E5E8EB !important;
+        margin: -0.5px !important;
         border-radius: 0px !important;
         min-height: 95px !important;
         height: 95px !important;
@@ -151,7 +159,7 @@ def save_tasks(tasks):
     with open(FILENAME, "w", encoding="utf-8") as f:
         json.dump(tasks, f, ensure_ascii=False, indent=4)
 
-# 분량 및 단위 파싱 함수
+# 분량 및 단위 파싱 함수 (정수 변환)
 def parse_amount_and_unit(text_input, default_unit):
     text_input = text_input.strip()
     if not text_input:
@@ -161,7 +169,7 @@ def parse_amount_and_unit(text_input, default_unit):
     if not match:
         return None, None
     
-    amount = float(match.group(1))
+    amount = int(float(match.group(1)))
     
     if "페이지" in text_input:
         unit = "페이지"
@@ -202,7 +210,7 @@ st.markdown("<p style='color: #8B95A1; font-size: 14px; text-align: center; marg
 if st.session_state.current_page == "home":
     tasks = st.session_state.tasks
     total_count = len(tasks)
-    active_count = sum(1 for t in tasks if (t['total_amount'] - t['completed_amount']) > 0)
+    active_count = sum(1 for t in tasks if (int(t['total_amount']) - int(t['completed_amount'])) > 0)
     
     st.markdown("<div class='tds-card'>", unsafe_allow_html=True)
     st.markdown("<h3 style='font-size: 18px; font-weight: 700; color: #191F28; margin-bottom: 8px;'>학습 현황 요약</h3>", unsafe_allow_html=True)
@@ -214,7 +222,6 @@ if st.session_state.current_page == "home":
 
     st.markdown("<p style='font-weight: 700; font-size: 16px; color: #191F28; margin-top: 24px; margin-bottom: 12px;'>메뉴 선택</p>", unsafe_allow_html=True)
 
-    # 메뉴 1: 해야 할 일
     st.markdown(
         """
         <div class="tds-card" style="margin-bottom: 12px; padding: 20px;">
@@ -227,7 +234,6 @@ if st.session_state.current_page == "home":
     if st.button("해야 할 일 페이지로 이동", key="btn_go_todo"):
         set_page("todo")
 
-    # 메뉴 2: 과제 등록
     st.markdown(
         """
         <div class="tds-card" style="margin-top: 12px; margin-bottom: 12px; padding: 20px;">
@@ -240,7 +246,6 @@ if st.session_state.current_page == "home":
     if st.button("과제 등록 페이지로 이동", key="btn_go_add"):
         set_page("add")
 
-    # 메뉴 3: 캘린더
     st.markdown(
         """
         <div class="tds-card" style="margin-top: 12px; margin-bottom: 12px; padding: 20px;">
@@ -280,14 +285,17 @@ elif st.session_state.current_page == "todo":
         for idx, task in enumerate(st.session_state.tasks):
             end_date = datetime.strptime(task['end_date'], "%Y-%m-%d").date()
             remaining_days = max(0, (end_date - today).days + 1)
-            remaining_amount = task['total_amount'] - task['completed_amount']
-            progress = min(1.0, max(0.0, task['completed_amount'] / task['total_amount']))
+            
+            comp_amt = int(task['completed_amount'])
+            tot_amt = int(task['total_amount'])
+            remaining_amount = tot_amt - comp_amt
+            progress = min(1.0, max(0.0, comp_amt / tot_amt)) if tot_amt > 0 else 0.0
             
             with st.expander(f"**{task['title']}**", expanded=True):
                 st.progress(progress)
                 st.markdown(
                     f"<p style='color: #8B95A1; font-size: 13px; text-align: right; margin-top: -8px; margin-bottom: 16px;'>"
-                    f"진행률 {progress * 100:.1f}% ({task['completed_amount']:.0f}/{task['total_amount']:.0f} {task['unit']})</p>",
+                    f"진행률 {progress * 100:.1f}% ({comp_amt}/{tot_amt} {task['unit']})</p>",
                     unsafe_allow_html=True
                 )
                 
@@ -307,9 +315,9 @@ elif st.session_state.current_page == "todo":
 
                 with col2:
                     if remaining_amount > 0 and end_date >= today and remaining_days > 0:
-                        today_add = st.number_input(f"오늘 한 양 ({task['unit']})", min_value=0.0, key=f"input_{idx}", value=0.0)
+                        today_add = st.number_input(f"오늘 한 양 ({task['unit']})", min_value=0, value=0, step=1, key=f"input_{idx}")
                         if st.button("기록하기", key=f"btn_{idx}"):
-                            task['completed_amount'] += today_add
+                            task['completed_amount'] = comp_amt + today_add
                             save_tasks(st.session_state.tasks)
                             st.success("기록되었습니다.")
                     
@@ -351,8 +359,8 @@ elif st.session_state.current_page == "add":
                 new_task = {
                     "title": title.strip(),
                     "unit": parsed_unit,
-                    "total_amount": parsed_amount,
-                    "completed_amount": 0.0,
+                    "total_amount": int(parsed_amount),
+                    "completed_amount": 0,
                     "end_date": end_date.strftime("%Y-%m-%d")
                 }
                 st.session_state.tasks.append(new_task)
@@ -399,14 +407,16 @@ elif st.session_state.current_page == "calendar":
             
             for idx, task in enumerate(day_tasks):
                 remaining_days = max(0, (sel_date_obj - today).days + 1)
-                remaining_amount = task['total_amount'] - task['completed_amount']
-                progress = min(1.0, max(0.0, task['completed_amount'] / task['total_amount']))
+                comp_amt = int(task['completed_amount'])
+                tot_amt = int(task['total_amount'])
+                remaining_amount = tot_amt - comp_amt
+                progress = min(1.0, max(0.0, comp_amt / tot_amt)) if tot_amt > 0 else 0.0
                 
                 with st.expander(f"**{task['title']}**", expanded=True):
                     st.progress(progress)
                     st.markdown(
                         f"<p style='color: #8B95A1; font-size: 13px; text-align: right; margin-top: -8px; margin-bottom: 16px;'>"
-                        f"진행률 {progress * 100:.1f}% ({task['completed_amount']:.0f}/{task['total_amount']:.0f} {task['unit']})</p>",
+                        f"진행률 {progress * 100:.1f}% ({comp_amt}/{tot_amt} {task['unit']})</p>",
                         unsafe_allow_html=True
                     )
                     
@@ -426,9 +436,9 @@ elif st.session_state.current_page == "calendar":
 
                     with col2:
                         if remaining_amount > 0 and sel_date_obj >= today and remaining_days > 0:
-                            today_add = st.number_input(f"오늘 한 양 ({task['unit']})", min_value=0.0, key=f"cal_dt_input_{idx}", value=0.0)
+                            today_add = st.number_input(f"오늘 한 양 ({task['unit']})", min_value=0, value=0, step=1, key=f"cal_dt_input_{idx}")
                             if st.button("기록하기", key=f"cal_dt_btn_{idx}"):
-                                task['completed_amount'] += today_add
+                                task['completed_amount'] = comp_amt + today_add
                                 save_tasks(st.session_state.tasks)
                                 st.success("기록되었습니다.")
                         
@@ -441,7 +451,7 @@ elif st.session_state.current_page == "calendar":
         st.markdown("</div>", unsafe_allow_html=True)
 
     # ------------------------------------------
-    # 4-B. 월간 격자형 캘린더 (Grid View)
+    # 4-B. 밀착형 월간 격자 캘린더 (Grid View)
     # ------------------------------------------
     else:
         st.markdown("<div class='sub-btn'>", unsafe_allow_html=True)
@@ -451,7 +461,6 @@ elif st.session_state.current_page == "calendar":
 
         st.markdown("<div class='tds-card' style='margin-top: 16px;'>", unsafe_allow_html=True)
         
-        # 상단 월 변경
         col_prev, col_title, col_next = st.columns([1, 3, 1])
         with col_prev:
             st.markdown("<div class='sub-btn'>", unsafe_allow_html=True)
@@ -480,7 +489,6 @@ elif st.session_state.current_page == "calendar":
                     st.session_state.cal_month += 1
             st.markdown("</div>", unsafe_allow_html=True)
 
-        # 마감일별 과제 매핑
         task_map = {}
         for task in st.session_state.tasks:
             ed = task['end_date']
@@ -488,7 +496,6 @@ elif st.session_state.current_page == "calendar":
                 task_map[ed] = []
             task_map[ed].append(task)
 
-        # 요일 헤더 (일~토)
         weekdays = ["일", "월", "화", "수", "목", "금", "토"]
         col_head = st.columns(7)
         for idx, day_name in enumerate(weekdays):
@@ -498,7 +505,6 @@ elif st.session_state.current_page == "calendar":
                 unsafe_allow_html=True
             )
 
-        # 7컬럼 달력 격자 출력 (파란색 버튼 완벽 제거)
         c = calendar.Calendar(firstweekday=6)
         month_weeks = c.monthdayscalendar(st.session_state.cal_year, st.session_state.cal_month)
 
@@ -511,7 +517,6 @@ elif st.session_state.current_page == "calendar":
                     date_str = f"{st.session_state.cal_year:04d}-{st.session_state.cal_month:02d}-{day:02d}"
                     day_tasks = task_map.get(date_str, [])
                     
-                    # 라벨: 날짜(좌상단) + 과제 제목 목록
                     cell_label = f"{day}\n"
                     if day_tasks:
                         task_titles = []
