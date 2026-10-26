@@ -8,7 +8,7 @@ from datetime import datetime, date
 # 1. 페이지 기본 설정 (이모티콘 전면 금지)
 st.set_page_config(page_title="PACE MAKER", layout="centered")
 
-# 2. 토스 디자인 시스템(TDS) 및 캘린더 격자 전용 CSS
+# 2. 토스 디자인 시스템(TDS) 및 캘린더 전용 격자 CSS
 tds_style = """
 <style>
     /* 전체 배경색 및 폰트 */
@@ -34,7 +34,7 @@ tds_style = """
         margin-bottom: 16px;
     }
 
-    /* 일반 폼 제출 및 주요 버튼 (토스 블루) */
+    /* 일반 이동 및 등록 버튼 (토스 블루) */
     .stButton > button, div[data-testid="stFormSubmitButton"] > button {
         background-color: #3182F6;
         color: #FFFFFF;
@@ -49,7 +49,6 @@ tds_style = """
 
     .stButton > button:hover, div[data-testid="stFormSubmitButton"] > button:hover {
         background-color: #1B64DA;
-        color: #FFFFFF;
     }
 
     /* 서브 버튼 (홈으로 이동 / 월 변경) */
@@ -57,6 +56,7 @@ tds_style = """
         background-color: #E8F3FF !important;
         color: #3182F6 !important;
         border: none !important;
+        border-radius: 10px !important;
     }
     div.sub-btn > button:hover {
         background-color: #DCEBFF !important;
@@ -67,6 +67,7 @@ tds_style = """
         background-color: #FFF1F2 !important;
         color: #F43F5E !important;
         border: 1px solid #FFE4E6 !important;
+        border-radius: 10px !important;
     }
     div.delete-btn > button:hover {
         background-color: #FFE4E6 !important;
@@ -74,26 +75,30 @@ tds_style = """
     }
 
     /* 
-      [핵심 수정] 캘린더 격자(Grid) 셀 버튼 CSS 
-      파란색 배경을 완전히 지우고 깔끔한 흰색 달력 칸으로 강제 재설정
+       [핵심 수정] 캘린더 7개 열(월간 그리드) 내부의 버튼을 파란색 알약에서
+       완전한 흰색 직사각형 달력 칸으로 변환하는 CSS
     */
-    div.cal-cell > button {
+    div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(7)) button {
         background-color: #FFFFFF !important;
         color: #191F28 !important;
         border: 1px solid #E2E8F0 !important;
         border-radius: 0px !important;
-        min-height: 100px !important;
-        height: 100px !important;
-        padding: 6px 6px !important;
+        min-height: 95px !important;
+        height: 95px !important;
+        padding: 6px 8px !important;
         text-align: left !important;
-        font-size: 12px !important;
+        font-size: 13px !important;
+        font-weight: 500 !important;
         line-height: 1.4 !important;
         white-space: pre-wrap !important;
         box-shadow: none !important;
-        width: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        justify-content: flex-start !important;
     }
-    
-    div.cal-cell > button:hover {
+
+    div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(7)) button:hover {
         background-color: #F8FAFC !important;
         border-color: #3182F6 !important;
     }
@@ -358,12 +363,12 @@ elif st.session_state.current_page == "add":
 
 
 # ==========================================
-# 4. 캘린더 페이지 (Calendar - 깔끔한 격자형)
+# 4. 캘린더 페이지 (Calendar)
 # ==========================================
 elif st.session_state.current_page == "calendar":
     
     # ------------------------------------------
-    # 4-A. 날짜 선택 시: 세부사항 큰 화면 (Full Detail View)
+    # 4-A. 격자 칸 클릭 시: 과제 세부사항 큰 화면 (Detail View)
     # ------------------------------------------
     if st.session_state.selected_calendar_date is not None:
         selected_date_str = st.session_state.selected_calendar_date
@@ -436,7 +441,7 @@ elif st.session_state.current_page == "calendar":
         st.markdown("</div>", unsafe_allow_html=True)
 
     # ------------------------------------------
-    # 4-B. 날짜 미선택 시: 깔끔한 격자형 월간 달력
+    # 4-B. 월간 격자형 캘린더 (Grid View)
     # ------------------------------------------
     else:
         st.markdown("<div class='sub-btn'>", unsafe_allow_html=True)
@@ -446,7 +451,7 @@ elif st.session_state.current_page == "calendar":
 
         st.markdown("<div class='tds-card' style='margin-top: 16px;'>", unsafe_allow_html=True)
         
-        # 상단 연월 이동
+        # 상단 월 변경
         col_prev, col_title, col_next = st.columns([1, 3, 1])
         with col_prev:
             st.markdown("<div class='sub-btn'>", unsafe_allow_html=True)
@@ -493,7 +498,7 @@ elif st.session_state.current_page == "calendar":
                 unsafe_allow_html=True
             )
 
-        # 달력 격자 출력 (파란색 알약 제거 및 얇은 실선 격자 적용)
+        # 7컬럼 달력 격자 출력 (파란색 버튼 완벽 제거)
         c = calendar.Calendar(firstweekday=6)
         month_weeks = c.monthdayscalendar(st.session_state.cal_year, st.session_state.cal_month)
 
@@ -519,9 +524,7 @@ elif st.session_state.current_page == "calendar":
                         if len(day_tasks) > 2:
                             cell_label += f"\n+{len(day_tasks)-2}개"
                     
-                    cols[idx].markdown("<div class='cal-cell'>", unsafe_allow_html=True)
                     if cols[idx].button(cell_label, key=f"cal_grid_{date_str}"):
                         st.session_state.selected_calendar_date = date_str
-                    cols[idx].markdown("</div>", unsafe_allow_html=True)
 
         st.markdown("</div>", unsafe_allow_html=True)
