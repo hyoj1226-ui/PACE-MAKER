@@ -2,6 +2,7 @@ import streamlit as st
 import json
 import math
 import re
+import calendar
 from datetime import datetime, date
 
 # 1. 페이지 기본 설정 (이모티콘 전면 제거)
@@ -51,7 +52,7 @@ tds_style = """
         color: #FFFFFF !important;
     }
 
-    /* 서브 버튼 (홈으로 이동 / 페이지 전환용) */
+    /* 서브 버튼 (홈으로 이동 / 월 변경용) */
     div.sub-btn > button {
         background-color: #E8F3FF !important;
         color: #3182F6 !important;
@@ -70,6 +71,37 @@ tds_style = """
     div.delete-btn > button:hover {
         background-color: #FFE4E6 !important;
         color: #E11D48 !important;
+    }
+
+    /* 캘린더 날짜 버튼 커스텀 */
+    div.cal-day-btn > button {
+        background-color: #FFFFFF !important;
+        color: #191F28 !important;
+        border: 1px solid #E5E8EB !important;
+        border-radius: 10px !important;
+        padding: 4px 0px !important;
+        font-size: 13px !important;
+        height: 48px !important;
+    }
+    div.cal-day-btn-has-task > button {
+        background-color: #E8F3FF !important;
+        color: #3182F6 !important;
+        border: 1.5px solid #3182F6 !important;
+        border-radius: 10px !important;
+        padding: 4px 0px !important;
+        font-size: 13px !important;
+        font-weight: 700 !important;
+        height: 48px !important;
+    }
+    div.cal-day-btn-selected > button {
+        background-color: #3182F6 !important;
+        color: #FFFFFF !important;
+        border: none !important;
+        border-radius: 10px !important;
+        padding: 4px 0px !important;
+        font-size: 13px !important;
+        font-weight: 700 !important;
+        height: 48px !important;
     }
 
     div[data-testid="stExpander"] {
@@ -120,20 +152,18 @@ def save_tasks(tasks):
     with open(FILENAME, "w", encoding="utf-8") as f:
         json.dump(tasks, f, ensure_ascii=False, indent=4)
 
-# 분량 및 단위 파싱 함수 (합쳐서 적어도 인식 가능)
+# 분량 및 단위 파싱 함수
 def parse_amount_and_unit(text_input, default_unit):
     text_input = text_input.strip()
     if not text_input:
         return None, None
     
-    # 숫자 부분 추출 (정수 및 실수 파싱)
     match = re.search(r'([\d.]+)', text_input)
     if not match:
         return None, None
     
     amount = float(match.group(1))
     
-    # 입력 텍스트에 단어가 직접 포함되어 있으면 인식
     if "페이지" in text_input:
         unit = "페이지"
     elif "문제" in text_input:
@@ -150,10 +180,17 @@ if "tasks" not in st.session_state:
 if "current_page" not in st.session_state:
     st.session_state.current_page = "home"
 
+today_obj = date.today()
+if "cal_year" not in st.session_state:
+    st.session_state.cal_year = today_obj.year
+if "cal_month" not in st.session_state:
+    st.session_state.cal_month = today_obj.month
+if "selected_calendar_date" not in st.session_state:
+    st.session_state.selected_calendar_date = today_obj.strftime("%Y-%m-%d")
+
 # 페이지 이동 함수
 def set_page(page_name):
     st.session_state.current_page = page_name
-    st.rerun()
 
 # --- [상단 타이틀 헤더] ---
 st.markdown("<h1 style='font-weight: 800; color: #191F28; font-size: 26px; margin-bottom: 4px; text-align: center;'>PACE MAKER</h1>", unsafe_allow_html=True)
@@ -275,14 +312,12 @@ elif st.session_state.current_page == "todo":
                             task['completed_amount'] += today_add
                             save_tasks(st.session_state.tasks)
                             st.success("기록되었습니다.")
-                            st.rerun()
                     
                     st.markdown("<div class='delete-btn' style='margin-top: 8px;'>", unsafe_allow_html=True)
                     if st.button("과제 삭제", key=f"del_{idx}"):
                         st.session_state.tasks.pop(idx)
                         save_tasks(st.session_state.tasks)
                         st.success("과제가 삭제되었습니다.")
-                        st.rerun()
                     st.markdown("</div>", unsafe_allow_html=True)
 
 
@@ -300,13 +335,8 @@ elif st.session_state.current_page == "add":
     
     with st.form("add_task_form_page"):
         title = st.text_input("과제 이름", placeholder="예: 수학 문제집")
-        
-        # 분량 단위 선택 (라디오 버튼)
         unit_choice = st.radio("기본 분량 단위 선택", ["페이지", "문제 수"], horizontal=True)
-        
-        # 통합 분량 입력 칸 (숫자만 적거나 "100페이지", "300문제"처럼 합쳐서 적어도 자동 파싱)
         total_input = st.text_input("총 분량", placeholder="예: 100페이지, 300문제 수 또는 숫자 100만 입력")
-        
         end_date = st.date_input("마감일")
         
         submitted = st.form_submit_button("과제 등록하기")
@@ -333,7 +363,7 @@ elif st.session_state.current_page == "add":
 
 
 # ==========================================
-# 4. 캘린더 페이지 (Calendar)
+# 4. 캘린더 페이지 (Calendar - 월간 큰 달력)
 # ==========================================
 elif st.session_state.current_page == "calendar":
     st.markdown("<div class='sub-btn'>", unsafe_allow_html=True)
@@ -342,40 +372,103 @@ elif st.session_state.current_page == "calendar":
     st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown("<div class='tds-card' style='margin-top: 16px;'>", unsafe_allow_html=True)
-    st.markdown("<h3 style='font-size: 18px; font-weight: 700; color: #191F28; margin-bottom: 16px;'>과제 마감 일정표</h3>", unsafe_allow_html=True)
     
-    if not st.session_state.tasks:
-        st.markdown("<p style='color: #8B95A1; font-size: 14px;'>등록된 과제가 없습니다.</p>", unsafe_allow_html=True)
-    else:
-        sorted_tasks = sorted(st.session_state.tasks, key=lambda x: x['end_date'])
-        today = date.today()
-        
-        for task in sorted_tasks:
-            end_date = datetime.strptime(task['end_date'], "%Y-%m-%d").date()
-            d_day = (end_date - today).days
-            
-            if d_day < 0:
-                d_day_str = f"기한 지남 (D+{abs(d_day)})"
-                tag_style = "background-color: #FFF1F2; color: #F43F5E;"
-            elif d_day == 0:
-                d_day_str = "오늘 마감 (D-Day)"
-                tag_style = "background-color: #FFF7ED; color: #EA580C;"
+    # 월 변경 컨트롤 헤더
+    col_prev, col_title, col_next = st.columns([1, 3, 1])
+    with col_prev:
+        st.markdown("<div class='sub-btn'>", unsafe_allow_html=True)
+        if st.button("이전달", key="prev_month"):
+            if st.session_state.cal_month == 1:
+                st.session_state.cal_month = 12
+                st.session_state.cal_year -= 1
             else:
-                d_day_str = f"D-{d_day}"
-                tag_style = "background-color: #E8F3FF; color: #3182F6;"
-            
+                st.session_state.cal_month -= 1
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    with col_title:
+        st.markdown(
+            f"<h3 style='font-size: 18px; font-weight: 700; color: #191F28; text-align: center; margin: 6px 0;'>"
+            f"{st.session_state.cal_year}년 {st.session_state.cal_month}월</h3>",
+            unsafe_allow_html=True
+        )
+
+    with col_next:
+        st.markdown("<div class='sub-btn'>", unsafe_allow_html=True)
+        if st.button("다음달", key="next_month"):
+            if st.session_state.cal_month == 12:
+                st.session_state.cal_month = 1
+                st.session_state.cal_year += 1
+            else:
+                st.session_state.cal_month += 1
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    # 마감일 기준으로 과제 맵핑
+    task_map = {}
+    for task in st.session_state.tasks:
+        ed = task['end_date']
+        if ed not in task_map:
+            task_map[ed] = []
+        task_map[ed].append(task)
+
+    # 요일 헤더 표시 (일요일~토요일)
+    weekdays = ["일", "월", "화", "수", "목", "금", "토"]
+    col_head = st.columns(7)
+    for idx, day_name in enumerate(weekdays):
+        color = "#F43F5E" if idx == 0 else ("#3182F6" if idx == 6 else "#6B7684")
+        col_head[idx].markdown(
+            f"<p style='text-align: center; font-weight: 700; font-size: 13px; color: {color}; margin-top: 12px; margin-bottom: 8px;'>{day_name}</p>",
+            unsafe_allow_html=True
+        )
+
+    # 달력 날짜 그리드 출력
+    c = calendar.Calendar(firstweekday=6)
+    month_weeks = c.monthdayscalendar(st.session_state.cal_year, st.session_state.cal_month)
+
+    for week in month_weeks:
+        cols = st.columns(7)
+        for idx, day in enumerate(week):
+            if day == 0:
+                cols[idx].write("")
+            else:
+                date_str = f"{st.session_state.cal_year:04d}-{st.session_state.cal_month:02d}-{day:02d}"
+                day_tasks = task_map.get(date_str, [])
+                task_count = len(day_tasks)
+                
+                is_selected = (date_str == st.session_state.selected_calendar_date)
+                
+                if is_selected:
+                    btn_class = "cal-day-btn-selected"
+                elif task_count > 0:
+                    btn_class = "cal-day-btn-has-task"
+                else:
+                    btn_class = "cal-day-btn"
+                
+                btn_label = f"{day}\n({task_count}개)" if task_count > 0 else f"{day}"
+                
+                cols[idx].markdown(f"<div class='{btn_class}'>", unsafe_allow_html=True)
+                if cols[idx].button(btn_label, key=f"cal_{date_str}"):
+                    st.session_state.selected_calendar_date = date_str
+                cols[idx].markdown("</div>", unsafe_allow_html=True)
+
+    # 선택된 날짜 상세 정보 표시
+    st.markdown("<hr style='border: none; border-top: 1px solid #E5E8EB; margin: 24px 0 16px 0;'>", unsafe_allow_html=True)
+    selected_date_str = st.session_state.selected_calendar_date
+    sel_date_tasks = task_map.get(selected_date_str, [])
+
+    st.markdown(f"<h4 style='font-size: 16px; font-weight: 700; color: #191F28; margin-bottom: 12px;'>선택한 날짜: {selected_date_str}</h4>", unsafe_allow_html=True)
+
+    if not sel_date_tasks:
+        st.markdown("<p style='color: #8B95A1; font-size: 14px; margin: 0;'>해당 날짜에 마감 예정인 과제가 없습니다.</p>", unsafe_allow_html=True)
+    else:
+        for task in sel_date_tasks:
             st.markdown(
                 f"""
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #F2F4F6;">
-                    <div>
-                        <p style="font-weight: 600; font-size: 15px; margin: 0; color: #191F28;">{task['title']}</p>
-                        <p style="font-size: 13px; color: #8B95A1; margin: 2px 0 0 0;">마감일: {task['end_date']} | 총 {task['total_amount']:.0f} {task['unit']}</p>
-                    </div>
-                    <span style="font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 8px; {tag_style}">
-                        {d_day_str}
-                    </span>
+                <div style="background-color: #F8F9FA; padding: 14px 16px; border-radius: 14px; border: 1px solid #E5E8EB; margin-bottom: 8px;">
+                    <p style="font-weight: 700; font-size: 15px; color: #191F28; margin: 0;">{task['title']}</p>
+                    <p style="font-size: 13px; color: #6B7684; margin: 4px 0 0 0;">총 분량: {task['total_amount']:.0f} {task['unit']} | 현재 진행: {task['completed_amount']:.0f} {task['unit']}</p>
                 </div>
                 """,
                 unsafe_allow_html=True
             )
+            
     st.markdown("</div>", unsafe_allow_html=True)
