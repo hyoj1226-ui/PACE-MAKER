@@ -8,7 +8,7 @@ from datetime import datetime, date
 # 1. 페이지 기본 설정 (이모티콘 전면 금지)
 st.set_page_config(page_title="PACE MAKER", layout="centered")
 
-# 2. 토스 디자인 시스템(TDS) 및 캘린더 전용 격자 CSS
+# 2. 토스 디자인 시스템(TDS) 및 커스텀 CSS
 tds_style = """
 <style>
     /* 전체 배경색 및 폰트 */
@@ -31,18 +31,18 @@ tds_style = """
         padding: 24px;
         border: 1px solid #E5E8EB;
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
-        margin-bottom: 16px;
+        margin-bottom: 12px;
     }
 
-    /* 일반 이동 및 등록 버튼 (토스 블루) */
+    /* 주요 실행 버튼 (토스 블루) */
     .stButton > button, div[data-testid="stFormSubmitButton"] > button {
         background-color: #3182F6;
         color: #FFFFFF;
         border-radius: 12px;
         border: none;
         font-weight: 600;
-        font-size: 14px;
-        padding: 10px 16px;
+        font-size: 15px;
+        padding: 12px 16px;
         width: 100%;
         transition: all 0.2s ease;
     }
@@ -57,6 +57,8 @@ tds_style = """
         color: #3182F6 !important;
         border: none !important;
         border-radius: 10px !important;
+        padding: 8px 14px !important;
+        font-size: 14px !important;
     }
     div.sub-btn > button:hover {
         background-color: #DCEBFF !important;
@@ -68,16 +70,15 @@ tds_style = """
         color: #F43F5E !important;
         border: 1px solid #FFE4E6 !important;
         border-radius: 10px !important;
+        padding: 8px 14px !important;
+        font-size: 13px !important;
     }
     div.delete-btn > button:hover {
         background-color: #FFE4E6 !important;
         color: #E11D48 !important;
     }
 
-    /* 
-       [핵심 수정] 캘린더 7열 컬럼 내부의 버튼이 좁아지지 않고 
-       가로 전체(100%)를 꽉 채우도록 안정적으로 설정한 CSS
-    */
+    /* 캘린더 7열 그리드 레이아웃 CSS */
     div[data-testid="stHorizontalBlock"] {
         gap: 4px !important;
     }
@@ -170,7 +171,7 @@ def save_tasks(tasks):
     with open(FILENAME, "w", encoding="utf-8") as f:
         json.dump(tasks, f, ensure_ascii=False, indent=4)
 
-# 분량 및 단위 파싱 함수 (총 분량 정수 변환)
+# 분량 및 단위 파싱 함수
 def parse_amount_and_unit(text_input, default_unit):
     text_input = text_input.strip()
     if not text_input:
@@ -206,26 +207,35 @@ if "cal_month" not in st.session_state:
 if "selected_calendar_date" not in st.session_state:
     st.session_state.selected_calendar_date = None
 
-# 페이지 이동 함수 (단일 클릭 즉시 반영을 위한 st.rerun)
+# 페이지 이동 함수
 def set_page(page_name):
     st.session_state.current_page = page_name
     st.rerun()
-
-# --- [상단 타이틀 헤더] ---
-st.markdown("<h1 style='font-weight: 800; color: #191F28; font-size: 26px; margin-bottom: 4px; text-align: center;'>PACE MAKER</h1>", unsafe_allow_html=True)
-st.markdown("<p style='color: #8B95A1; font-size: 14px; text-align: center; margin-bottom: 24px;'>목표가 틀어져도 괜찮습니다. 오늘 할 일을 유연하게 맞춰드립니다.</p>", unsafe_allow_html=True)
 
 
 # ==========================================
 # 1. 홈 화면 (Home)
 # ==========================================
 if st.session_state.current_page == "home":
+    # PM 로고 및 헤더 영역
+    st.markdown(
+        """
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 10px; margin-bottom: 28px;">
+            <div style="background-color: #3182F6; color: #FFFFFF; font-weight: 900; font-size: 24px; width: 56px; height: 56px; border-radius: 18px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(49, 130, 246, 0.35); margin-bottom: 14px; letter-spacing: -0.5px;">PM</div>
+            <h1 style="font-weight: 800; color: #191F28; font-size: 28px; margin: 0 0 6px 0; text-align: center;">PACE MAKER</h1>
+            <p style="color: #8B95A1; font-size: 14px; margin: 0; text-align: center;">목표가 틀어져도 괜찮습니다. 오늘 할 일을 유연하게 맞춰드립니다.</p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+    
+    # 현황 요약
     tasks = st.session_state.tasks
     total_count = len(tasks)
     active_count = sum(1 for t in tasks if (int(t['total_amount']) - int(t['completed_amount'])) > 0)
     
     st.markdown("<div class='tds-card'>", unsafe_allow_html=True)
-    st.markdown("<h3 style='font-size: 18px; font-weight: 700; color: #191F28; margin-bottom: 8px;'>학습 현황 요약</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='font-size: 17px; font-weight: 700; color: #191F28; margin-bottom: 6px;'>학습 현황 요약</h3>", unsafe_allow_html=True)
     if total_count == 0:
         st.markdown("<p style='color: #8B95A1; font-size: 14px; margin: 0;'>등록된 과제가 없습니다. 아래 메뉴에서 새로운 과제를 등록해 보세요.</p>", unsafe_allow_html=True)
     else:
@@ -234,40 +244,44 @@ if st.session_state.current_page == "home":
 
     st.markdown("<p style='font-weight: 700; font-size: 16px; color: #191F28; margin-top: 24px; margin-bottom: 12px;'>메뉴 선택</p>", unsafe_allow_html=True)
 
+    # 3개 메뉴 칸 (설명 카드 + 단일 직관 버튼)
+    # 메뉴 1: 해야 할 일
     st.markdown(
         """
-        <div class="tds-card" style="margin-bottom: 12px; padding: 20px;">
-            <h4 style="margin:0; font-size: 16px; color: #191F28; font-weight: 700;">해야 할 일</h4>
-            <p style="margin: 4px 0 0 0; font-size: 13px; color: #8B95A1;">오늘의 자동 추천 목표 확인 및 일일 진행량 기록</p>
+        <div class="tds-card" style="margin-bottom: 8px; padding: 20px 20px 14px 20px;">
+            <h4 style="margin:0 0 4px 0; font-size: 16px; color: #191F28; font-weight: 700;">해야 할 일</h4>
+            <p style="margin: 0; font-size: 13px; color: #8B95A1;">오늘의 자동 추천 목표 확인 및 일일 진행량 기록</p>
         </div>
         """,
         unsafe_allow_html=True
     )
-    if st.button("해야 할 일 페이지로 이동", key="btn_go_todo"):
+    if st.button("해야 할 일", key="btn_home_todo"):
         set_page("todo")
 
+    # 메뉴 2: 과제 등록
     st.markdown(
         """
-        <div class="tds-card" style="margin-top: 12px; margin-bottom: 12px; padding: 20px;">
-            <h4 style="margin:0; font-size: 16px; color: #191F28; font-weight: 700;">과제 등록</h4>
-            <p style="margin: 4px 0 0 0; font-size: 13px; color: #8B95A1;">새로운 과제 이름, 총 분량 및 마감일 설정</p>
+        <div class="tds-card" style="margin-top: 16px; margin-bottom: 8px; padding: 20px 20px 14px 20px;">
+            <h4 style="margin:0 0 4px 0; font-size: 16px; color: #191F28; font-weight: 700;">과제 등록</h4>
+            <p style="margin: 0; font-size: 13px; color: #8B95A1;">새로운 과제 이름, 총 분량 및 마감일 설정</p>
         </div>
         """,
         unsafe_allow_html=True
     )
-    if st.button("과제 등록 페이지로 이동", key="btn_go_add"):
+    if st.button("과제 등록", key="btn_home_add"):
         set_page("add")
 
+    # 메뉴 3: 캘린더
     st.markdown(
         """
-        <div class="tds-card" style="margin-top: 12px; margin-bottom: 12px; padding: 20px;">
-            <h4 style="margin:0; font-size: 16px; color: #191F28; font-weight: 700;">캘린더</h4>
-            <p style="margin: 4px 0 0 0; font-size: 13px; color: #8B95A1;">전체 과제 마감일 및 D-Day 일정표 확인</p>
+        <div class="tds-card" style="margin-top: 16px; margin-bottom: 8px; padding: 20px 20px 14px 20px;">
+            <h4 style="margin:0 0 4px 0; font-size: 16px; color: #191F28; font-weight: 700;">캘린더</h4>
+            <p style="margin: 0; font-size: 13px; color: #8B95A1;">전체 과제 마감일 및 D-Day 일정표 확인</p>
         </div>
         """,
         unsafe_allow_html=True
     )
-    if st.button("캘린더 페이지로 이동", key="btn_go_calendar"):
+    if st.button("캘린더", key="btn_home_cal"):
         st.session_state.selected_calendar_date = None
         set_page("calendar")
 
@@ -468,7 +482,7 @@ elif st.session_state.current_page == "calendar":
         st.markdown("</div>", unsafe_allow_html=True)
 
     # ------------------------------------------
-    # 4-B. 넓고 깔끔한 월간 격자 캘린더 (Grid View)
+    # 4-B. 월간 격자 캘린더 (Grid View)
     # ------------------------------------------
     else:
         st.markdown("<div class='sub-btn'>", unsafe_allow_html=True)
@@ -548,7 +562,6 @@ elif st.session_state.current_page == "calendar":
                         if len(day_tasks) > 2:
                             cell_label += f"\n+{len(day_tasks)-2}개"
                     
-                    # 단 한 번의 클릭으로 즉시 세부 화면 전환 (st.rerun 추가)
                     if cols[idx].button(cell_label, key=f"cal_grid_{date_str}"):
                         st.session_state.selected_calendar_date = date_str
                         st.rerun()
