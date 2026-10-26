@@ -8,7 +8,7 @@ from datetime import datetime, date
 # 1. 페이지 기본 설정 (이모티콘 전면 금지)
 st.set_page_config(page_title="PACE MAKER", layout="centered")
 
-# 2. 토스 디자인 시스템(TDS) 및 캘린더 완벽 격자 CSS
+# 2. 토스 디자인 시스템(TDS) 및 캘린더 전용 격자 CSS
 tds_style = """
 <style>
     /* 전체 배경색 및 폰트 */
@@ -75,35 +75,32 @@ tds_style = """
     }
 
     /* 
-       [핵심 수정] 캘린더 7개 컬럼 간격 0px 강제 통일 및 100% 폭 직사각형 격자
+       [핵심 수정] 캘린더 7열 컬럼 내부의 버튼이 좁아지지 않고 
+       가로 전체(100%)를 꽉 채우도록 안정적으로 설정한 CSS
     */
-    div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(7)) {
-        gap: 0px !important;
-        margin-bottom: 0px !important;
+    div[data-testid="stHorizontalBlock"] {
+        gap: 4px !important;
     }
 
-    div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(7)) > div[data-testid="stColumn"] {
+    div[data-testid="stColumn"] {
         padding: 0px !important;
-        min-width: 0 !important;
-        flex: 1 1 0% !important;
     }
 
-    div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(7)) div[data-testid="stElementWrapper"],
-    div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(7)) div[data-testid="stButton"] {
+    div[data-testid="stColumn"] > div,
+    div[data-testid="stColumn"] div[data-testid="stElementWrapper"],
+    div[data-testid="stColumn"] div[data-testid="stButton"] {
         width: 100% !important;
     }
 
-    div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(7)) button {
+    div[data-testid="stColumn"] button {
         width: 100% !important;
-        box-sizing: border-box !important;
         background-color: #FFFFFF !important;
         color: #191F28 !important;
         border: 1px solid #E2E8F0 !important;
-        margin: -0.5px !important;
-        border-radius: 0px !important;
+        border-radius: 8px !important;
         min-height: 85px !important;
         height: 85px !important;
-        padding: 6px 6px !important;
+        padding: 6px !important;
         text-align: left !important;
         font-size: 12px !important;
         line-height: 1.3 !important;
@@ -113,16 +110,16 @@ tds_style = """
         display: block !important;
     }
 
-    div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(7)) button:hover:not(:disabled) {
+    div[data-testid="stColumn"] button:hover:not(:disabled) {
         background-color: #F8FAFC !important;
         border-color: #3182F6 !important;
     }
 
-    /* 빈 날짜 비활성화 칸 스타일 */
-    div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(7)) button:disabled {
+    div[data-testid="stColumn"] button:disabled {
         background-color: #FAFAFA !important;
         border-color: #F1F5F9 !important;
         cursor: default !important;
+        opacity: 0.4 !important;
     }
 
     div[data-testid="stExpander"] {
@@ -173,7 +170,7 @@ def save_tasks(tasks):
     with open(FILENAME, "w", encoding="utf-8") as f:
         json.dump(tasks, f, ensure_ascii=False, indent=4)
 
-# 분량 및 단위 파싱 함수 (정수 변환)
+# 분량 및 단위 파싱 함수 (총 분량 정수 변환)
 def parse_amount_and_unit(text_input, default_unit):
     text_input = text_input.strip()
     if not text_input:
@@ -209,9 +206,10 @@ if "cal_month" not in st.session_state:
 if "selected_calendar_date" not in st.session_state:
     st.session_state.selected_calendar_date = None
 
-# 페이지 이동 함수
+# 페이지 이동 함수 (단일 클릭 즉시 반영을 위한 st.rerun)
 def set_page(page_name):
     st.session_state.current_page = page_name
+    st.rerun()
 
 # --- [상단 타이틀 헤더] ---
 st.markdown("<h1 style='font-weight: 800; color: #191F28; font-size: 26px; margin-bottom: 4px; text-align: center;'>PACE MAKER</h1>", unsafe_allow_html=True)
@@ -334,12 +332,14 @@ elif st.session_state.current_page == "todo":
                             task['completed_amount'] = comp_amt + today_add
                             save_tasks(st.session_state.tasks)
                             st.success("기록되었습니다.")
+                            st.rerun()
                     
                     st.markdown("<div class='delete-btn' style='margin-top: 8px;'>", unsafe_allow_html=True)
                     if st.button("과제 삭제", key=f"del_{idx}"):
                         st.session_state.tasks.pop(idx)
                         save_tasks(st.session_state.tasks)
                         st.success("과제가 삭제되었습니다.")
+                        st.rerun()
                     st.markdown("</div>", unsafe_allow_html=True)
 
 
@@ -398,6 +398,7 @@ elif st.session_state.current_page == "calendar":
         st.markdown("<div class='sub-btn'>", unsafe_allow_html=True)
         if st.button("캘린더로 돌아가기", key="back_to_cal_grid"):
             st.session_state.selected_calendar_date = None
+            st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
 
         st.markdown("<div class='tds-card' style='margin-top: 16px;'>", unsafe_allow_html=True)
@@ -455,17 +456,19 @@ elif st.session_state.current_page == "calendar":
                                 task['completed_amount'] = comp_amt + today_add
                                 save_tasks(st.session_state.tasks)
                                 st.success("기록되었습니다.")
+                                st.rerun()
                         
                         st.markdown("<div class='delete-btn' style='margin-top: 8px;'>", unsafe_allow_html=True)
                         if st.button("과제 삭제", key=f"cal_dt_del_{idx}"):
                             st.session_state.tasks = [t for t in st.session_state.tasks if not (t['title'] == task['title'] and t['end_date'] == task['end_date'])]
                             save_tasks(st.session_state.tasks)
                             st.success("과제가 삭제되었습니다.")
+                            st.rerun()
                         st.markdown("</div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
     # ------------------------------------------
-    # 4-B. 꽉 찬 직사각형 월간 격자 캘린더 (Grid View)
+    # 4-B. 넓고 깔끔한 월간 격자 캘린더 (Grid View)
     # ------------------------------------------
     else:
         st.markdown("<div class='sub-btn'>", unsafe_allow_html=True)
@@ -484,6 +487,7 @@ elif st.session_state.current_page == "calendar":
                     st.session_state.cal_year -= 1
                 else:
                     st.session_state.cal_month -= 1
+                st.rerun()
             st.markdown("</div>", unsafe_allow_html=True)
 
         with col_title:
@@ -501,6 +505,7 @@ elif st.session_state.current_page == "calendar":
                     st.session_state.cal_year += 1
                 else:
                     st.session_state.cal_month += 1
+                st.rerun()
             st.markdown("</div>", unsafe_allow_html=True)
 
         task_map = {}
@@ -526,7 +531,6 @@ elif st.session_state.current_page == "calendar":
             cols = st.columns(7)
             for idx, day in enumerate(week):
                 if day == 0:
-                    # 빈 날짜 칸도 동일한 형태의 비활성화 격자 버튼 생성
                     cols[idx].button("", key=f"blank_{week_idx}_{idx}", disabled=True)
                 else:
                     date_str = f"{st.session_state.cal_year:04d}-{st.session_state.cal_month:02d}-{day:02d}"
@@ -544,7 +548,9 @@ elif st.session_state.current_page == "calendar":
                         if len(day_tasks) > 2:
                             cell_label += f"\n+{len(day_tasks)-2}개"
                     
+                    # 단 한 번의 클릭으로 즉시 세부 화면 전환 (st.rerun 추가)
                     if cols[idx].button(cell_label, key=f"cal_grid_{date_str}"):
                         st.session_state.selected_calendar_date = date_str
+                        st.rerun()
 
         st.markdown("</div>", unsafe_allow_html=True)
