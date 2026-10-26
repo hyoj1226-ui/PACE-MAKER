@@ -8,7 +8,7 @@ from datetime import datetime, date
 # 1. 페이지 기본 설정 (이모티콘 전면 금지)
 st.set_page_config(page_title="PACE MAKER", layout="centered")
 
-# 2. 토스 디자인 시스템(TDS) 및 버튼 애니메이션 커스텀 CSS
+# 2. 토스 디자인 시스템(TDS) 및 커스텀 CSS
 tds_style = """
 <style>
     /* 전체 배경색 및 폰트 */
@@ -34,10 +34,7 @@ tds_style = """
         margin-bottom: 20px;
     }
 
-    /* 
-       [전역 버튼 클릭 애니메이션 (Global Button Active Scale)]
-       모든 버튼을 누를 때 튀어 오르듯 수축하는 효과 적용
-    */
+    /* 전역 버튼 클릭 애니메이션 */
     button {
         transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
@@ -47,9 +44,7 @@ tds_style = """
         opacity: 0.9 !important;
     }
 
-    /* 
-       [홈 화면 3열 메인 메뉴 버튼]
-    */
+    /* 홈 화면 3열 메인 메뉴 버튼 */
     div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(3)) {
         gap: 12px !important;
     }
@@ -78,14 +73,7 @@ tds_style = """
         box-shadow: 0 8px 20px rgba(49, 130, 246, 0.15) !important;
     }
 
-    div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(3)) button:active {
-        transform: scale(0.94) !important;
-        box-shadow: 0 2px 8px rgba(49, 130, 246, 0.1) !important;
-    }
-
-    /* 
-       [뒤로가기 버튼] 글자 없는 심플한 화살표 버튼
-    */
+    /* 뒤로가기 화살표 버튼 */
     div.back-btn > button {
         background-color: #FFFFFF !important;
         color: #191F28 !important;
@@ -109,7 +97,30 @@ tds_style = """
     }
 
     /* 
-       [등록/기록 버튼 전용 초록색 애니메이션]
+       [캘린더 상단 연/월 클릭 팝오버 전용 스타일]
+       가운데 글자를 누르면 팝업창이 뜨도록 투명 버튼화
+    */
+    div.month-popover > div[data-testid="stPopover"] > button {
+        background-color: transparent !important;
+        color: #191F28 !important;
+        border: none !important;
+        font-size: 18px !important;
+        font-weight: 700 !important;
+        box-shadow: none !important;
+        padding: 6px 12px !important;
+        border-radius: 10px !important;
+        width: auto !important;
+        margin: 0 auto !important;
+        display: block !important;
+    }
+
+    div.month-popover > div[data-testid="stPopover"] > button:hover {
+        background-color: #E8F3FF !important;
+        color: #3182F6 !important;
+    }
+
+    /* 
+       [초록색 버튼 전용] 오늘 한 양 추가/기록 & 과제 등록
     */
     div[data-testid="stFormSubmitButton"] > button, div.record-btn > button {
         background-color: #10B981 !important;
@@ -117,46 +128,35 @@ tds_style = """
         border-radius: 12px !important;
         border: none !important;
         font-weight: 700 !important;
-        font-size: 15px !important;
+        font-size: 14px !important;
         padding: 10px 16px !important;
         width: 100% !important;
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25) !important;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2) !important;
     }
 
     div[data-testid="stFormSubmitButton"] > button:hover, div.record-btn > button:hover {
         background-color: #059669 !important;
-        box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35) !important;
-    }
-
-    div[data-testid="stFormSubmitButton"] > button:active, div.record-btn > button:active {
-        transform: scale(0.95) !important;
-        background-color: #047857 !important;
+        box-shadow: 0 6px 16px rgba(16, 185, 129, 0.3) !important;
     }
 
     /* 
-       [삭제 버튼 전용 빨간색 애니메이션]
+       [빨간색 버튼 전용] 과제 삭제
     */
     div.delete-btn > button {
-        background-color: #FFF1F2 !important;
-        color: #F43F5E !important;
-        border: 1px solid #FFE4E6 !important;
+        background-color: #F43F5E !important;
+        color: #FFFFFF !important;
+        border: none !important;
         border-radius: 10px !important;
         padding: 8px 14px !important;
         font-size: 13px !important;
         font-weight: 700 !important;
         width: 100% !important;
+        box-shadow: 0 4px 12px rgba(244, 63, 94, 0.2) !important;
     }
 
     div.delete-btn > button:hover {
-        background-color: #F43F5E !important;
-        color: #FFFFFF !important;
-        border-color: #F43F5E !important;
-        box-shadow: 0 4px 12px rgba(244, 63, 94, 0.25) !important;
-    }
-
-    div.delete-btn > button:active {
-        transform: scale(0.94) !important;
         background-color: #E11D48 !important;
+        box-shadow: 0 6px 16px rgba(244, 63, 94, 0.3) !important;
     }
 
     /* 캘린더 월 이동 버튼 */
@@ -174,7 +174,7 @@ tds_style = """
         background-color: #DCEBFF !important;
     }
 
-    /* 일반 토스 블루 버튼 (메인 동작용) */
+    /* 토스 블루 기본 버튼 */
     .stButton > button {
         background-color: #3182F6;
         color: #FFFFFF;
@@ -365,7 +365,6 @@ if st.session_state.current_page == "home":
 # 2. 해야 할 일 페이지 (To-Do)
 # ==========================================
 elif st.session_state.current_page == "todo":
-    # 글자 없는 화살표 뒤로가기 버튼 (←)
     st.markdown("<div class='back-btn'>", unsafe_allow_html=True)
     if st.button("←", key="back_from_todo"):
         set_page("home")
@@ -572,6 +571,7 @@ elif st.session_state.current_page == "calendar":
 
         st.markdown("<div class='tds-card' style='margin-top: 12px;'>", unsafe_allow_html=True)
         
+        # 이전달 / 연월팝업 / 다음달 상단 컨트롤
         col_prev, col_title, col_next = st.columns([1, 3, 1])
         with col_prev:
             st.markdown("<div class='month-nav-btn'>", unsafe_allow_html=True)
@@ -585,11 +585,21 @@ elif st.session_state.current_page == "calendar":
             st.markdown("</div>", unsafe_allow_html=True)
 
         with col_title:
-            st.markdown(
-                f"<h3 style='font-size: 18px; font-weight: 700; color: #191F28; text-align: center; margin: 6px 0;'>"
-                f"{st.session_state.cal_year}년 {st.session_state.cal_month}월</h3>",
-                unsafe_allow_html=True
-            )
+            # 가운데 연/월 글자를 클릭하면 연/월 선택 창(Popover)이 열림
+            st.markdown("<div class='month-popover' style='text-align: center;'>", unsafe_allow_html=True)
+            with st.popover(f"{st.session_state.cal_year}년 {st.session_state.cal_month}월"):
+                st.markdown("<p style='font-size: 14px; font-weight: 700; margin-bottom: 8px; color: #191F28;'>이동할 연/월 선택</p>", unsafe_allow_html=True)
+                c_y, c_m = st.columns(2)
+                with c_y:
+                    sel_y = st.selectbox("연도", range(2023, 2031), index=range(2023, 2031).index(st.session_state.cal_year) if st.session_state.cal_year in range(2023, 2031) else 3, key="pop_sel_y")
+                with c_m:
+                    sel_m = st.selectbox("월", range(1, 13), index=st.session_state.cal_month - 1, key="pop_sel_m")
+                
+                if st.button("이동", key="btn_apply_popover_month"):
+                    st.session_state.cal_year = sel_y
+                    st.session_state.cal_month = sel_m
+                    st.rerun()
+            st.markdown("</div>", unsafe_allow_html=True)
 
         with col_next:
             st.markdown("<div class='month-nav-btn'>", unsafe_allow_html=True)
