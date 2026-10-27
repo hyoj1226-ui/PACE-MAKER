@@ -44,19 +44,19 @@ tds_style = """
         opacity: 0.9 !important;
     }
 
-    /* 홈 화면 3열 메인 메뉴 버튼 */
-    div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(3)) {
-        gap: 12px !important;
+    /* 홈 화면 메인 메뉴 버튼 (가로 4열 또는 3열 대응) */
+    div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(4)) {
+        gap: 10px !important;
     }
 
-    div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(3)) button {
+    div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(4)) button {
         background: #FFFFFF !important;
         color: #191F28 !important;
         border: 1px solid #E5E8EB !important;
         border-radius: 20px !important;
-        height: 120px !important;
-        min-height: 120px !important;
-        font-size: 16px !important;
+        height: 110px !important;
+        min-height: 110px !important;
+        font-size: 15px !important;
         font-weight: 700 !important;
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03) !important;
         display: flex !important;
@@ -65,7 +65,7 @@ tds_style = """
         width: 100% !important;
     }
 
-    div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(3)) button:hover {
+    div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(4)) button:hover {
         background-color: #FFFFFF !important;
         border-color: #3182F6 !important;
         color: #3182F6 !important;
@@ -96,10 +96,43 @@ tds_style = """
         background-color: #E8F3FF !important;
     }
 
-    /* 
-       [캘린더 상단 연/월 클릭 팝오버 전용 스타일]
-       가운데 글자를 누르면 팝업창이 뜨도록 투명 버튼화
-    */
+    /* 초록색 버튼: 등록, 저장, 기록 */
+    div[data-testid="stFormSubmitButton"] > button, div.record-btn > button, div.save-btn > button {
+        background-color: #10B981 !important;
+        color: #FFFFFF !important;
+        border-radius: 12px !important;
+        border: none !important;
+        font-weight: 700 !important;
+        font-size: 14px !important;
+        padding: 10px 16px !important;
+        width: 100% !important;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2) !important;
+    }
+
+    div[data-testid="stFormSubmitButton"] > button:hover, div.record-btn > button:hover, div.save-btn > button:hover {
+        background-color: #059669 !important;
+        box-shadow: 0 6px 16px rgba(16, 185, 129, 0.3) !important;
+    }
+
+    /* 빨간색 버튼: 삭제, 로그아웃 */
+    div.delete-btn > button, div.logout-btn > button {
+        background-color: #F43F5E !important;
+        color: #FFFFFF !important;
+        border: none !important;
+        border-radius: 10px !important;
+        padding: 8px 14px !important;
+        font-size: 13px !important;
+        font-weight: 700 !important;
+        width: 100% !important;
+        box-shadow: 0 4px 12px rgba(244, 63, 94, 0.2) !important;
+    }
+
+    div.delete-btn > button:hover, div.logout-btn > button:hover {
+        background-color: #E11D48 !important;
+        box-shadow: 0 6px 16px rgba(244, 63, 94, 0.3) !important;
+    }
+
+    /* 캘린더 상단 연/월 클릭 팝오버 버튼 */
     div.month-popover > div[data-testid="stPopover"] > button {
         background-color: transparent !important;
         color: #191F28 !important;
@@ -117,46 +150,6 @@ tds_style = """
     div.month-popover > div[data-testid="stPopover"] > button:hover {
         background-color: #E8F3FF !important;
         color: #3182F6 !important;
-    }
-
-    /* 
-       [초록색 버튼 전용] 오늘 한 양 추가/기록 & 과제 등록
-    */
-    div[data-testid="stFormSubmitButton"] > button, div.record-btn > button {
-        background-color: #10B981 !important;
-        color: #FFFFFF !important;
-        border-radius: 12px !important;
-        border: none !important;
-        font-weight: 700 !important;
-        font-size: 14px !important;
-        padding: 10px 16px !important;
-        width: 100% !important;
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2) !important;
-    }
-
-    div[data-testid="stFormSubmitButton"] > button:hover, div.record-btn > button:hover {
-        background-color: #059669 !important;
-        box-shadow: 0 6px 16px rgba(16, 185, 129, 0.3) !important;
-    }
-
-    /* 
-       [빨간색 버튼 전용] 과제 삭제
-    */
-    div.delete-btn > button {
-        background-color: #F43F5E !important;
-        color: #FFFFFF !important;
-        border: none !important;
-        border-radius: 10px !important;
-        padding: 8px 14px !important;
-        font-size: 13px !important;
-        font-weight: 700 !important;
-        width: 100% !important;
-        box-shadow: 0 4px 12px rgba(244, 63, 94, 0.2) !important;
-    }
-
-    div.delete-btn > button:hover {
-        background-color: #E11D48 !important;
-        box-shadow: 0 6px 16px rgba(244, 63, 94, 0.3) !important;
     }
 
     /* 캘린더 월 이동 버튼 */
@@ -262,22 +255,25 @@ tds_style = """
 """
 st.markdown(tds_style, unsafe_allow_html=True)
 
-FILENAME = "tasks.json"
+USER_FILE = "users.json"
+TASK_FILE = "tasks.json"
 
-# 데이터 불러오기
-def load_tasks():
+# 기본 주간 일정 템플릿 (요일별 가능 시간)
+DEFAULT_SCHEDULE = {"월": 3, "화": 3, "수": 3, "목": 3, "금": 3, "토": 5, "일": 5}
+
+# 파일 입출력 함수
+def load_json(filename, default_val):
     try:
-        with open(FILENAME, "r", encoding="utf-8") as f:
+        with open(filename, "r", encoding="utf-8") as f:
             return json.load(f)
     except (FileNotFoundError, json.JSONDecodeError):
-        return []
+        return default_val
 
-# 데이터 저장하기
-def save_tasks(tasks):
-    with open(FILENAME, "w", encoding="utf-8") as f:
-        json.dump(tasks, f, ensure_ascii=False, indent=4)
+def save_json(filename, data):
+    with open(filename, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=4)
 
-# 분량 및 단위 파싱 함수
+# 파싱 함수
 def parse_amount_and_unit(text_input, default_unit):
     text_input = text_input.strip()
     if not text_input:
@@ -299,11 +295,17 @@ def parse_amount_and_unit(text_input, default_unit):
     return amount, unit
 
 # 세션 상태 초기화
+if "users" not in st.session_state:
+    st.session_state.users = load_json(USER_FILE, {})
+
 if "tasks" not in st.session_state:
-    st.session_state.tasks = load_tasks()
+    st.session_state.tasks = load_json(TASK_FILE, [])
+
+if "current_user" not in st.session_state:
+    st.session_state.current_user = None
 
 if "current_page" not in st.session_state:
-    st.session_state.current_page = "home"
+    st.session_state.current_page = "login"
 
 today_obj = date.today()
 if "cal_year" not in st.session_state:
@@ -313,30 +315,144 @@ if "cal_month" not in st.session_state:
 if "selected_calendar_date" not in st.session_state:
     st.session_state.selected_calendar_date = None
 
-# 페이지 이동 함수
 def set_page(page_name):
     st.session_state.current_page = page_name
     st.rerun()
+
+# 오늘의 요일별 추천목표 가중 계산 함수
+def calculate_daily_target(remaining_amount, end_date_obj, user_schedule):
+    today = date.today()
+    remaining_days = (end_date_obj - today).days + 1
+    if remaining_days <= 0 or remaining_amount <= 0:
+        return 0
+    
+    weekday_keys = ["월", "화", "수", "목", "금", "토", "일"]
+    
+    # 남은 일수 동안의 총 가능 시간 합계 구하기
+    total_avail_hours = 0
+    day_hours_list = []
+    
+    for i in range(remaining_days):
+        target_day = date.fromordinal(today.toordinal() + i)
+        w_idx = target_day.weekday() # 0:월 ~ 6:일
+        w_key = weekday_keys[w_idx]
+        hours = user_schedule.get(w_key, 3)
+        day_hours_list.append(hours)
+        total_avail_hours += hours
+        
+    today_hours = day_hours_list[0]
+    
+    if total_avail_hours == 0:
+        return math.ceil(remaining_amount / remaining_days)
+    
+    # 오늘 가능 시간에 비례한 가중 추천 목표
+    recommended = math.ceil(remaining_amount * (today_hours / total_avail_hours))
+    return recommended
+
+
+# ==========================================
+# 0. 로그인 및 회원가입 화면
+# ==========================================
+if st.session_state.current_user is None:
+    st.markdown(
+        """
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 24px; margin-bottom: 28px;">
+            <div style="background-color: #3182F6; color: #FFFFFF; font-weight: 900; font-size: 32px; width: 72px; height: 72px; border-radius: 22px; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 20px rgba(49, 130, 246, 0.35); margin-bottom: 16px; letter-spacing: -1px;">PM</div>
+            <h1 style="font-weight: 900; color: #191F28; font-size: 32px; margin: 0 0 8px 0; text-align: center;">PACE MAKER</h1>
+            <p style="color: #8B95A1; font-size: 14px; margin: 0; text-align: center;">맞춤형 일정을 위해 로그인 또는 회원가입을 진행해 주세요.</p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+    
+    tab_login, tab_signup = st.tabs(["로그인", "회원가입"])
+    
+    with tab_login:
+        st.markdown("<div class='tds-card' style='margin-top: 12px;'>", unsafe_allow_html=True)
+        login_id = st.text_input("아이디", key="login_id")
+        login_pw = st.text_input("비밀번호", type="password", key="login_pw")
+        
+        if st.button("로그인", key="btn_login_submit"):
+            if not login_id.strip() or not login_pw.strip():
+                st.warning("아이디와 비밀번호를 입력해 주세요.")
+            elif login_id not in st.session_state.users:
+                st.error("존재하지 않는 아이디입니다.")
+            elif st.session_state.users[login_id]["password"] != login_pw:
+                st.error("비밀번호가 일치하지 않습니다.")
+            else:
+                st.session_state.current_user = login_id
+                st.session_state.current_page = "home"
+                st.success("로그인 성공")
+                st.rerun()
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    with tab_signup:
+        st.markdown("<div class='tds-card' style='margin-top: 12px;'>", unsafe_allow_html=True)
+        new_id = st.text_input("새 아이디", key="signup_id")
+        new_pw = st.text_input("새 비밀번호", type="password", key="signup_pw")
+        
+        st.markdown("<p style='font-weight: 700; font-size: 14px; color: #191F28; margin-top: 16px; margin-bottom: 8px;'>주간 요일별 학습 가능 시간 설정 (시간)</p>", unsafe_allow_html=True)
+        cols_sch = st.columns(7)
+        new_schedule = {}
+        day_names = ["월", "화", "수", "목", "금", "토", "일"]
+        for idx, dname in enumerate(day_names):
+            default_h = 5 if idx >= 5 else 3
+            new_schedule[dname] = cols_sch[idx].number_input(f"{dname}", min_value=0, max_value=24, value=default_h, key=f"signup_sch_{dname}")
+
+        if st.button("회원가입", key="btn_signup_submit"):
+            if not new_id.strip() or not new_pw.strip():
+                st.warning("아이디와 비밀번호를 입력해 주세요.")
+            elif new_id in st.session_state.users:
+                st.error("이미 존재하는 아이디입니다.")
+            else:
+                st.session_state.users[new_id] = {
+                    "password": new_pw,
+                    "schedule": new_schedule
+                }
+                save_json(USER_FILE, st.session_state.users)
+                st.success("회원가입이 완료되었습니다. 로그인 탭에서 로그인해 주세요.")
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    st.stop()
+
+
+# ==========================================
+# 사용자 공통 상태 및 상단 바
+# ==========================================
+user_info = st.session_state.users.get(st.session_state.current_user, {"schedule": DEFAULT_SCHEDULE})
+user_schedule = user_info.get("schedule", DEFAULT_SCHEDULE)
+user_tasks = [t for t in st.session_state.tasks if t.get("user_id") == st.session_state.current_user]
 
 
 # ==========================================
 # 1. 홈 화면 (Home)
 # ==========================================
 if st.session_state.current_page == "home":
+    # 상단 사용자 프로필 및 로그아웃 바
+    col_u1, col_u2 = st.columns([3, 1])
+    with col_u1:
+        st.markdown(f"<p style='color: #4E5968; font-size: 14px; font-weight: 600; margin: 8px 0 0 0;'>반갑습니다, <b>{st.session_state.current_user}</b>님</p>", unsafe_allow_html=True)
+    with col_u2:
+        st.markdown("<div class='logout-btn'>", unsafe_allow_html=True)
+        if st.button("로그아웃", key="btn_logout"):
+            st.session_state.current_user = None
+            st.session_state.current_page = "login"
+            st.rerun()
+        st.markdown("</div>", unsafe_allow_html=True)
+
     st.markdown(
         """
-        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 16px; margin-bottom: 32px;">
-            <div style="background-color: #3182F6; color: #FFFFFF; font-weight: 900; font-size: 32px; width: 72px; height: 72px; border-radius: 22px; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 20px rgba(49, 130, 246, 0.35); margin-bottom: 16px; letter-spacing: -1px;">PM</div>
-            <h1 style="font-weight: 900; color: #191F28; font-size: 36px; margin: 0 0 8px 0; text-align: center; letter-spacing: -0.5px;">PACE MAKER</h1>
-            <p style="color: #8B95A1; font-size: 15px; margin: 0; text-align: center;">목표가 틀어져도 괜찮습니다. 오늘 할 일을 유연하게 맞춰드립니다.</p>
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 12px; margin-bottom: 24px;">
+            <div style="background-color: #3182F6; color: #FFFFFF; font-weight: 900; font-size: 32px; width: 72px; height: 72px; border-radius: 22px; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 20px rgba(49, 130, 246, 0.35); margin-bottom: 14px; letter-spacing: -1px;">PM</div>
+            <h1 style="font-weight: 900; color: #191F28; font-size: 34px; margin: 0 0 6px 0; text-align: center;">PACE MAKER</h1>
+            <p style="color: #8B95A1; font-size: 14px; margin: 0; text-align: center;">목표가 틀어져도 괜찮습니다. 오늘 할 일을 유연하게 맞춰드립니다.</p>
         </div>
         """,
         unsafe_allow_html=True
     )
     
-    tasks = st.session_state.tasks
-    total_count = len(tasks)
-    active_count = sum(1 for t in tasks if (int(t['total_amount']) - int(t['completed_amount'])) > 0)
+    total_count = len(user_tasks)
+    active_count = sum(1 for t in user_tasks if (int(t['total_amount']) - int(t['completed_amount'])) > 0)
     
     st.markdown("<div class='tds-card'>", unsafe_allow_html=True)
     st.markdown("<h3 style='font-size: 17px; font-weight: 700; color: #191F28; margin-bottom: 6px;'>학습 현황 요약</h3>", unsafe_allow_html=True)
@@ -346,7 +462,8 @@ if st.session_state.current_page == "home":
         st.markdown(f"<p style='color: #4E5968; font-size: 15px; margin: 0;'>현재 <b>{active_count}개</b>의 진행 중인 과제가 있습니다.</p>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
-    col1, col2, col3 = st.columns(3)
+    # 4개 메뉴 가로 배치
+    col1, col2, col3, col4 = st.columns(4)
     with col1:
         if st.button("오늘의 할 일", key="btn_home_todo"):
             set_page("todo")
@@ -360,6 +477,10 @@ if st.session_state.current_page == "home":
             st.session_state.selected_calendar_date = None
             set_page("calendar")
 
+    with col4:
+        if st.button("일정 관리", key="btn_home_schedule"):
+            set_page("schedule")
+
 
 # ==========================================
 # 2. 해야 할 일 페이지 (To-Do)
@@ -372,7 +493,7 @@ elif st.session_state.current_page == "todo":
     
     st.markdown("<h3 style='font-size: 22px; font-weight: 800; color: #191F28; margin-top: 12px; margin-bottom: 16px;'>해야 할 일</h3>", unsafe_allow_html=True)
 
-    if not st.session_state.tasks:
+    if not user_tasks:
         st.markdown(
             """
             <div class="tds-card" style="text-align: center; padding: 40px 20px;">
@@ -383,7 +504,7 @@ elif st.session_state.current_page == "todo":
         )
     else:
         today = date.today()
-        for idx, task in enumerate(st.session_state.tasks):
+        for idx, task in enumerate(user_tasks):
             end_date = datetime.strptime(task['end_date'], "%Y-%m-%d").date()
             remaining_days = max(0, (end_date - today).days + 1)
             
@@ -410,9 +531,9 @@ elif st.session_state.current_page == "todo":
                     elif remaining_days <= 0:
                         st.error("유효 작업 일수가 부족합니다.")
                     else:
-                        daily_target = math.ceil(remaining_amount / remaining_days)
-                        st.metric(label="오늘의 추천 목표", value=f"{daily_target} {task['unit']}")
-                        st.caption(f"남은 기간 D-{remaining_days}일")
+                        daily_target = calculate_daily_target(remaining_amount, end_date, user_schedule)
+                        st.metric(label="오늘의 맞춤 추천 목표", value=f"{daily_target} {task['unit']}")
+                        st.caption(f"남은 기간 D-{remaining_days}일 (내 주간 일정 반영)")
 
                 with col2:
                     if remaining_amount > 0 and end_date >= today and remaining_days > 0:
@@ -420,15 +541,15 @@ elif st.session_state.current_page == "todo":
                         st.markdown("<div class='record-btn'>", unsafe_allow_html=True)
                         if st.button("기록", key=f"btn_{idx}"):
                             task['completed_amount'] = comp_amt + today_add
-                            save_tasks(st.session_state.tasks)
+                            save_json(TASK_FILE, st.session_state.tasks)
                             st.success("기록 되었습니다.")
                             st.rerun()
                         st.markdown("</div>", unsafe_allow_html=True)
                     
                     st.markdown("<div class='delete-btn' style='margin-top: 8px;'>", unsafe_allow_html=True)
                     if st.button("삭제", key=f"del_{idx}"):
-                        st.session_state.tasks.pop(idx)
-                        save_tasks(st.session_state.tasks)
+                        st.session_state.tasks = [t for t in st.session_state.tasks if t != task]
+                        save_json(TASK_FILE, st.session_state.tasks)
                         st.success("삭제 되었습니다.")
                         st.rerun()
                     st.markdown("</div>", unsafe_allow_html=True)
@@ -462,6 +583,7 @@ elif st.session_state.current_page == "add":
                 st.warning("총 분량을 올바른 형식(예: 100, 100페이지, 300문제)으로 입력해 주세요.")
             else:
                 new_task = {
+                    "user_id": st.session_state.current_user,
                     "title": title.strip(),
                     "unit": parsed_unit,
                     "total_amount": int(parsed_amount),
@@ -469,20 +591,49 @@ elif st.session_state.current_page == "add":
                     "end_date": end_date.strftime("%Y-%m-%d")
                 }
                 st.session_state.tasks.append(new_task)
-                save_tasks(st.session_state.tasks)
+                save_json(TASK_FILE, st.session_state.tasks)
                 st.success(f"'{title}' 과제가 추가되었습니다.")
                 set_page("todo")
     st.markdown("</div>", unsafe_allow_html=True)
 
 
 # ==========================================
-# 4. 캘린더 페이지 (Calendar)
+# 4. 일정 관리 페이지 (Schedule Management)
+# ==========================================
+elif st.session_state.current_page == "schedule":
+    st.markdown("<div class='back-btn'>", unsafe_allow_html=True)
+    if st.button("←", key="back_from_schedule"):
+        set_page("home")
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown("<div class='tds-card' style='margin-top: 12px;'>", unsafe_allow_html=True)
+    st.markdown("<h3 style='font-size: 18px; font-weight: 700; color: #191F28; margin-bottom: 4px;'>주간 학습 일정 변경</h3>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #8B95A1; font-size: 14px; margin-bottom: 20px;'>바뀐 일정에 맞춰 요일별 학습 가능 시간(시간 단위)을 수정해 보세요.</p>", unsafe_allow_html=True)
+
+    day_names = ["월", "화", "수", "목", "금", "토", "일"]
+    updated_schedule = {}
+    
+    cols_update = st.columns(7)
+    for idx, dname in enumerate(day_names):
+        cur_h = user_schedule.get(dname, 3)
+        updated_schedule[dname] = cols_update[idx].number_input(f"{dname}", min_value=0, max_value=24, value=cur_h, key=f"update_sch_{dname}")
+
+    st.markdown("<div class='save-btn' style='margin-top: 20px;'>", unsafe_allow_html=True)
+    if st.button("일정 저장", key="btn_save_schedule"):
+        st.session_state.users[st.session_state.current_user]["schedule"] = updated_schedule
+        save_json(USER_FILE, st.session_state.users)
+        st.success("주간 학습 일정이 업데이트되었습니다.")
+        set_page("home")
+    st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
+
+
+# ==========================================
+# 5. 캘린더 페이지 (Calendar)
 # ==========================================
 elif st.session_state.current_page == "calendar":
     
-    # ------------------------------------------
-    # 4-A. 격자 칸 클릭 시: 과제 세부사항 큰 화면 (Detail View)
-    # ------------------------------------------
+    # 4-A. 상세 화면
     if st.session_state.selected_calendar_date is not None:
         selected_date_str = st.session_state.selected_calendar_date
         
@@ -496,7 +647,7 @@ elif st.session_state.current_page == "calendar":
         st.markdown(f"<h2 style='font-size: 22px; font-weight: 800; color: #191F28; margin-bottom: 4px;'>{selected_date_str} 마감 과제 상세</h2>", unsafe_allow_html=True)
         st.markdown("<p style='color: #8B95A1; font-size: 14px; margin-bottom: 24px;'>선택하신 날짜에 마감되는 과제의 상세 현황입니다.</p>", unsafe_allow_html=True)
 
-        day_tasks = [t for t in st.session_state.tasks if t['end_date'] == selected_date_str]
+        day_tasks = [t for t in user_tasks if t['end_date'] == selected_date_str]
         
         if not day_tasks:
             st.markdown(
@@ -536,8 +687,8 @@ elif st.session_state.current_page == "calendar":
                         elif remaining_days <= 0:
                             st.error("유효 작업 일수가 부족합니다.")
                         else:
-                            daily_target = math.ceil(remaining_amount / remaining_days)
-                            st.metric(label="오늘의 추천 목표", value=f"{daily_target} {task['unit']}")
+                            daily_target = calculate_daily_target(remaining_amount, sel_date_obj, user_schedule)
+                            st.metric(label="오늘의 맞춤 추천 목표", value=f"{daily_target} {task['unit']}")
                             st.caption(f"남은 기간 D-{remaining_days}일")
 
                     with col2:
@@ -546,23 +697,21 @@ elif st.session_state.current_page == "calendar":
                             st.markdown("<div class='record-btn'>", unsafe_allow_html=True)
                             if st.button("기록", key=f"cal_dt_btn_{idx}"):
                                 task['completed_amount'] = comp_amt + today_add
-                                save_tasks(st.session_state.tasks)
+                                save_json(TASK_FILE, st.session_state.tasks)
                                 st.success("기록 되었습니다.")
                                 st.rerun()
                             st.markdown("</div>", unsafe_allow_html=True)
                         
                         st.markdown("<div class='delete-btn' style='margin-top: 8px;'>", unsafe_allow_html=True)
                         if st.button("삭제", key=f"cal_dt_del_{idx}"):
-                            st.session_state.tasks = [t for t in st.session_state.tasks if not (t['title'] == task['title'] and t['end_date'] == task['end_date'])]
-                            save_tasks(st.session_state.tasks)
+                            st.session_state.tasks = [t for t in st.session_state.tasks if t != task]
+                            save_json(TASK_FILE, st.session_state.tasks)
                             st.success("삭제 되었습니다.")
                             st.rerun()
                         st.markdown("</div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
-    # ------------------------------------------
-    # 4-B. 월간 격자 캘린더 (Grid View)
-    # ------------------------------------------
+    # 4-B. 월간 그리드 캘린더
     else:
         st.markdown("<div class='back-btn'>", unsafe_allow_html=True)
         if st.button("←", key="back_from_cal_main"):
@@ -571,7 +720,6 @@ elif st.session_state.current_page == "calendar":
 
         st.markdown("<div class='tds-card' style='margin-top: 12px;'>", unsafe_allow_html=True)
         
-        # 이전달 / 연월팝업 / 다음달 상단 컨트롤
         col_prev, col_title, col_next = st.columns([1, 3, 1])
         with col_prev:
             st.markdown("<div class='month-nav-btn'>", unsafe_allow_html=True)
@@ -585,7 +733,6 @@ elif st.session_state.current_page == "calendar":
             st.markdown("</div>", unsafe_allow_html=True)
 
         with col_title:
-            # 가운데 연/월 글자를 클릭하면 연/월 선택 창(Popover)이 열림
             st.markdown("<div class='month-popover' style='text-align: center;'>", unsafe_allow_html=True)
             with st.popover(f"{st.session_state.cal_year}년 {st.session_state.cal_month}월"):
                 st.markdown("<p style='font-size: 14px; font-weight: 700; margin-bottom: 8px; color: #191F28;'>이동할 연/월 선택</p>", unsafe_allow_html=True)
@@ -613,7 +760,7 @@ elif st.session_state.current_page == "calendar":
             st.markdown("</div>", unsafe_allow_html=True)
 
         task_map = {}
-        for task in st.session_state.tasks:
+        for task in user_tasks:
             ed = task['end_date']
             if ed not in task_map:
                 task_map[ed] = []
