@@ -8,13 +8,16 @@ from datetime import datetime, date
 # 1. 페이지 기본 설정 (이모티콘 전면 금지)
 st.set_page_config(page_title="PACE MAKER", layout="centered")
 
-# 2. 토스 디자인 시스템(TDS) 및 커스텀 CSS
+# 2. 고급 타이포그래피 및 화려한 애니메이션 커스텀 CSS
 tds_style = """
 <style>
-    /* 전체 배경색 및 폰트 */
+    @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&display=swap');
+
+    /* 전체 배경색 및 글로벌 폰트 설정 */
     .stApp {
         background-color: #F2F4F6 !important;
-        font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", sans-serif;
+        font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
         color: #191F28;
     }
     
@@ -27,16 +30,56 @@ tds_style = """
     /* 카드 컨테이너 스타일 */
     .tds-card {
         background-color: #FFFFFF;
-        border-radius: 20px;
-        padding: 24px;
+        border-radius: 24px;
+        padding: 26px;
         border: 1px solid #E5E8EB;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
         margin-bottom: 20px;
     }
 
-    /* 전역 버튼 클릭 애니메이션 */
+    /* 키프레임 애니메이션 정의 */
+    @keyframes floatLogo {
+        0% { transform: translateY(0px) scale(1); box-shadow: 0 8px 24px rgba(49, 130, 246, 0.35); }
+        50% { transform: translateY(-10px) scale(1.04); box-shadow: 0 18px 36px rgba(49, 130, 246, 0.45); }
+        100% { transform: translateY(0px) scale(1); box-shadow: 0 8px 24px rgba(49, 130, 246, 0.35); }
+    }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(24px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulseGlow {
+        0% { border-color: #E5E8EB; }
+        50% { border-color: #3182F6; box-shadow: 0 0 20px rgba(49, 130, 246, 0.2); }
+        100% { border-color: #E5E8EB; }
+    }
+
+    /* 소개 화면 요소 애니메이션 클래스 */
+    .hero-logo {
+        animation: floatLogo 3.2s ease-in-out infinite;
+        font-family: 'Montserrat', sans-serif !important;
+    }
+
+    .hero-title {
+        font-family: 'Montserrat', sans-serif !important;
+        animation: fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+        letter-spacing: -1px !important;
+    }
+
+    .hero-desc {
+        animation: fadeInUp 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .hero-feature-card {
+        animation: fadeInUp 1.1s cubic-bezier(0.16, 1, 0.3, 1);
+        animation: pulseGlow 4s infinite;
+    }
+
+    /* 버튼 기본 애니메이션 */
     button {
-        transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        font-family: 'Pretendard', sans-serif !important;
     }
     
     button:active {
@@ -44,7 +87,7 @@ tds_style = """
         opacity: 0.9 !important;
     }
 
-    /* 홈 화면 메인 메뉴 버튼 (가로 4열 또는 3열 대응) */
+    /* 메인 홈 메뉴 버튼 (가로 4열) */
     div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(4)) {
         gap: 10px !important;
     }
@@ -69,7 +112,7 @@ tds_style = """
         background-color: #FFFFFF !important;
         border-color: #3182F6 !important;
         color: #3182F6 !important;
-        transform: translateY(-2px) !important;
+        transform: translateY(-3px) !important;
         box-shadow: 0 8px 20px rgba(49, 130, 246, 0.15) !important;
     }
 
@@ -100,18 +143,18 @@ tds_style = """
     div[data-testid="stFormSubmitButton"] > button, div.record-btn > button, div.save-btn > button {
         background-color: #10B981 !important;
         color: #FFFFFF !important;
-        border-radius: 12px !important;
+        border-radius: 14px !important;
         border: none !important;
         font-weight: 700 !important;
-        font-size: 14px !important;
-        padding: 10px 16px !important;
+        font-size: 15px !important;
+        padding: 12px 16px !important;
         width: 100% !important;
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2) !important;
+        box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25) !important;
     }
 
     div[data-testid="stFormSubmitButton"] > button:hover, div.record-btn > button:hover, div.save-btn > button:hover {
         background-color: #059669 !important;
-        box-shadow: 0 6px 16px rgba(16, 185, 129, 0.3) !important;
+        box-shadow: 0 6px 18px rgba(16, 185, 129, 0.35) !important;
     }
 
     /* 빨간색 버튼: 삭제, 로그아웃 */
@@ -119,26 +162,44 @@ tds_style = """
         background-color: #F43F5E !important;
         color: #FFFFFF !important;
         border: none !important;
-        border-radius: 10px !important;
-        padding: 8px 14px !important;
+        border-radius: 12px !important;
+        padding: 10px 14px !important;
         font-size: 13px !important;
         font-weight: 700 !important;
         width: 100% !important;
-        box-shadow: 0 4px 12px rgba(244, 63, 94, 0.2) !important;
+        box-shadow: 0 4px 14px rgba(244, 63, 94, 0.25) !important;
     }
 
     div.delete-btn > button:hover, div.logout-btn > button:hover {
         background-color: #E11D48 !important;
-        box-shadow: 0 6px 16px rgba(244, 63, 94, 0.3) !important;
+        box-shadow: 0 6px 18px rgba(244, 63, 94, 0.35) !important;
     }
 
-    /* 캘린더 상단 연/월 클릭 팝오버 버튼 */
+    /* 토스 블루 버튼 */
+    .stButton > button {
+        background-color: #3182F6;
+        color: #FFFFFF;
+        border-radius: 14px;
+        border: none;
+        font-weight: 700;
+        font-size: 15px;
+        padding: 12px 16px;
+        width: 100%;
+        box-shadow: 0 4px 14px rgba(49, 130, 246, 0.25);
+    }
+
+    .stButton > button:hover {
+        background-color: #1B64DA;
+        box-shadow: 0 6px 18px rgba(49, 130, 246, 0.35);
+    }
+
+    /* 캘린더 연월 클릭 팝오버 */
     div.month-popover > div[data-testid="stPopover"] > button {
         background-color: transparent !important;
         color: #191F28 !important;
         border: none !important;
         font-size: 18px !important;
-        font-weight: 700 !important;
+        font-weight: 800 !important;
         box-shadow: none !important;
         padding: 6px 12px !important;
         border-radius: 10px !important;
@@ -150,37 +211,6 @@ tds_style = """
     div.month-popover > div[data-testid="stPopover"] > button:hover {
         background-color: #E8F3FF !important;
         color: #3182F6 !important;
-    }
-
-    /* 캘린더 월 이동 버튼 */
-    div.month-nav-btn > button {
-        background-color: #E8F3FF !important;
-        color: #3182F6 !important;
-        border: none !important;
-        border-radius: 10px !important;
-        padding: 8px 12px !important;
-        font-size: 14px !important;
-        font-weight: 700 !important;
-    }
-
-    div.month-nav-btn > button:hover {
-        background-color: #DCEBFF !important;
-    }
-
-    /* 토스 블루 기본 버튼 */
-    .stButton > button {
-        background-color: #3182F6;
-        color: #FFFFFF;
-        border-radius: 12px;
-        border: none;
-        font-weight: 600;
-        font-size: 14px;
-        padding: 10px 16px;
-        width: 100%;
-    }
-
-    .stButton > button:hover {
-        background-color: #1B64DA;
     }
 
     /* 캘린더 7열 그리드 CSS */
@@ -257,8 +287,6 @@ st.markdown(tds_style, unsafe_allow_html=True)
 
 USER_FILE = "users.json"
 TASK_FILE = "tasks.json"
-
-# 기본 주간 일정 템플릿 (요일별 가능 시간)
 DEFAULT_SCHEDULE = {"월": 3, "화": 3, "수": 3, "목": 3, "금": 3, "토": 5, "일": 5}
 
 # 파일 입출력 함수
@@ -304,8 +332,11 @@ if "tasks" not in st.session_state:
 if "current_user" not in st.session_state:
     st.session_state.current_user = None
 
+if "auth_page" not in st.session_state:
+    st.session_state.auth_page = "intro" # "intro", "login", "signup"
+
 if "current_page" not in st.session_state:
-    st.session_state.current_page = "login"
+    st.session_state.current_page = "home"
 
 today_obj = date.today()
 if "cal_year" not in st.session_state:
@@ -319,7 +350,11 @@ def set_page(page_name):
     st.session_state.current_page = page_name
     st.rerun()
 
-# 오늘의 요일별 추천목표 가중 계산 함수
+def set_auth_page(auth_name):
+    st.session_state.auth_page = auth_name
+    st.rerun()
+
+# 요일별 맞춤 목표 계산 함수
 def calculate_daily_target(remaining_amount, end_date_obj, user_schedule):
     today = date.today()
     remaining_days = (end_date_obj - today).days + 1
@@ -327,54 +362,82 @@ def calculate_daily_target(remaining_amount, end_date_obj, user_schedule):
         return 0
     
     weekday_keys = ["월", "화", "수", "목", "금", "토", "일"]
-    
-    # 남은 일수 동안의 총 가능 시간 합계 구하기
     total_avail_hours = 0
     day_hours_list = []
     
     for i in range(remaining_days):
         target_day = date.fromordinal(today.toordinal() + i)
-        w_idx = target_day.weekday() # 0:월 ~ 6:일
+        w_idx = target_day.weekday()
         w_key = weekday_keys[w_idx]
         hours = user_schedule.get(w_key, 3)
         day_hours_list.append(hours)
         total_avail_hours += hours
         
     today_hours = day_hours_list[0]
-    
     if total_avail_hours == 0:
         return math.ceil(remaining_amount / remaining_days)
     
-    # 오늘 가능 시간에 비례한 가중 추천 목표
-    recommended = math.ceil(remaining_amount * (today_hours / total_avail_hours))
-    return recommended
+    return math.ceil(remaining_amount * (today_hours / total_avail_hours))
 
 
 # ==========================================
-# 0. 로그인 및 회원가입 화면
+# 0. 비로그인 상태 (소개 애니메이션 / 창 분리 로그인/회원가입)
 # ==========================================
 if st.session_state.current_user is None:
-    st.markdown(
-        """
-        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 24px; margin-bottom: 28px;">
-            <div style="background-color: #3182F6; color: #FFFFFF; font-weight: 900; font-size: 32px; width: 72px; height: 72px; border-radius: 22px; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 20px rgba(49, 130, 246, 0.35); margin-bottom: 16px; letter-spacing: -1px;">PM</div>
-            <h1 style="font-weight: 900; color: #191F28; font-size: 32px; margin: 0 0 8px 0; text-align: center;">PACE MAKER</h1>
-            <p style="color: #8B95A1; font-size: 14px; margin: 0; text-align: center;">맞춤형 일정을 위해 로그인 또는 회원가입을 진행해 주세요.</p>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
     
-    tab_login, tab_signup = st.tabs(["로그인", "회원가입"])
-    
-    with tab_login:
+    # 0-A. 첫 화면: 화려한 소개 및 안내 화면 (Splash Intro View)
+    if st.session_state.auth_page == "intro":
+        st.markdown(
+            """
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 28px; margin-bottom: 32px;">
+                <div class="hero-logo" style="background-color: #3182F6; color: #FFFFFF; font-weight: 900; font-size: 38px; width: 88px; height: 88px; border-radius: 28px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; letter-spacing: -1px;">PM</div>
+                <h1 class="hero-title" style="font-weight: 900; color: #191F28; font-size: 42px; margin: 0 0 10px 0; text-align: center;">PACE MAKER</h1>
+                <p class="hero-desc" style="color: #6B7684; font-size: 16px; margin: 0; text-align: center; font-weight: 500;">일정이 틀어져도 괜찮습니다. 당신의 일상에 맞추어 페이스를 조절해 드립니다.</p>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+        st.markdown(
+            """
+            <div class="tds-card hero-feature-card" style="padding: 28px; margin-bottom: 24px;">
+                <h3 style="font-size: 18px; font-weight: 800; color: #191F28; margin: 0 0 12px 0;">지능형 과제 스케줄러</h3>
+                <p style="font-size: 14px; color: #4E5968; margin: 0 0 8px 0; line-height: 1.6;">• <b>개인 맞춤 가중 계산</b>: 요일별 학습 가능 시간에 맞추어 오늘의 일일 추천 목표를 자동으로 계산합니다.</p>
+                <p style="font-size: 14px; color: #4E5968; margin: 0 0 8px 0; line-height: 1.6;">• <b>직관적 월간 캘린더</b>: 과제 마감일이 표기된 월간 그리드로 주요 일정을 한눈에 파악합니다.</p>
+                <p style="font-size: 14px; color: #4E5968; margin: 0; line-height: 1.6;">• <b>실시간 진도율 기록</b>: 정수 단위 입력과 정교한 % 소수점 표기로 학습 진행률을 모니터링합니다.</p>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+        col_auth1, col_auth2 = st.columns(2)
+        with col_auth1:
+            if st.button("로그인", key="btn_go_login_view"):
+                set_auth_page("login")
+
+        with col_auth2:
+            st.markdown("<div class='record-btn'>", unsafe_allow_html=True)
+            if st.button("회원가입", key="btn_go_signup_view"):
+                set_auth_page("signup")
+            st.markdown("</div>", unsafe_allow_html=True)
+
+    # 0-B. 로그인 전용 창
+    elif st.session_state.auth_page == "login":
+        st.markdown("<div class='back-btn'>", unsafe_allow_html=True)
+        if st.button("←", key="back_to_intro_from_login"):
+            set_auth_page("intro")
+        st.markdown("</div>", unsafe_allow_html=True)
+
         st.markdown("<div class='tds-card' style='margin-top: 12px;'>", unsafe_allow_html=True)
-        login_id = st.text_input("아이디", key="login_id")
-        login_pw = st.text_input("비밀번호", type="password", key="login_pw")
-        
-        if st.button("로그인", key="btn_login_submit"):
+        st.markdown("<h2 style='font-size: 24px; font-weight: 800; color: #191F28; margin-bottom: 4px;'>로그인</h2>", unsafe_allow_html=True)
+        st.markdown("<p style='color: #8B95A1; font-size: 14px; margin-bottom: 20px;'>아이디와 비밀번호를 입력해 주세요.</p>", unsafe_allow_html=True)
+
+        login_id = st.text_input("아이디", key="input_login_id", placeholder="영문 아이디")
+        login_pw = st.text_input("비밀번호", type="password", key="input_login_pw")
+
+        if st.button("로그인", key="btn_submit_login"):
             if not login_id.strip() or not login_pw.strip():
-                st.warning("아이디와 비밀번호를 입력해 주세요.")
+                st.warning("아이디와 비밀번호를 모두 입력해 주세요.")
             elif login_id not in st.session_state.users:
                 st.error("존재하지 않는 아이디입니다.")
             elif st.session_state.users[login_id]["password"] != login_pw:
@@ -382,16 +445,25 @@ if st.session_state.current_user is None:
             else:
                 st.session_state.current_user = login_id
                 st.session_state.current_page = "home"
-                st.success("로그인 성공")
+                st.success("로그인 되었습니다.")
                 st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
 
-    with tab_signup:
+    # 0-C. 회원가입 전용 창 (유효성 검증 포함)
+    elif st.session_state.auth_page == "signup":
+        st.markdown("<div class='back-btn'>", unsafe_allow_html=True)
+        if st.button("←", key="back_to_intro_from_signup"):
+            set_auth_page("intro")
+        st.markdown("</div>", unsafe_allow_html=True)
+
         st.markdown("<div class='tds-card' style='margin-top: 12px;'>", unsafe_allow_html=True)
-        new_id = st.text_input("새 아이디", key="signup_id")
-        new_pw = st.text_input("새 비밀번호", type="password", key="signup_pw")
-        
-        st.markdown("<p style='font-weight: 700; font-size: 14px; color: #191F28; margin-top: 16px; margin-bottom: 8px;'>주간 요일별 학습 가능 시간 설정 (시간)</p>", unsafe_allow_html=True)
+        st.markdown("<h2 style='font-size: 24px; font-weight: 800; color: #191F28; margin-bottom: 4px;'>회원가입</h2>", unsafe_allow_html=True)
+        st.markdown("<p style='color: #8B95A1; font-size: 14px; margin-bottom: 20px;'>새로운 계정 정보 및 주간 학습 가능 시간을 설정해 주세요.</p>", unsafe_allow_html=True)
+
+        new_id = st.text_input("아이디 (영문 대소문자만 가능)", key="input_signup_id", placeholder="예: pacemaker")
+        new_pw = st.text_input("비밀번호 (영문 및 숫자 포함 필수)", type="password", key="input_signup_pw")
+
+        st.markdown("<p style='font-weight: 700; font-size: 14px; color: #191F28; margin-top: 20px; margin-bottom: 8px;'>주간 요일별 학습 가능 시간 (시간 단위)</p>", unsafe_allow_html=True)
         cols_sch = st.columns(7)
         new_schedule = {}
         day_names = ["월", "화", "수", "목", "금", "토", "일"]
@@ -399,9 +471,19 @@ if st.session_state.current_user is None:
             default_h = 5 if idx >= 5 else 3
             new_schedule[dname] = cols_sch[idx].number_input(f"{dname}", min_value=0, max_value=24, value=default_h, key=f"signup_sch_{dname}")
 
-        if st.button("회원가입", key="btn_signup_submit"):
+        st.markdown("<div class='record-btn' style='margin-top: 20px;'>", unsafe_allow_html=True)
+        if st.button("회원가입", key="btn_submit_signup"):
+            # 유효성 검사 (아이디: 영문만 / 비밀번호: 영문+숫자 조합)
+            is_id_valid = bool(re.match(r'^[a-zA-Z]+$', new_id.strip()))
+            has_letter = bool(re.search(r'[a-zA-Z]', new_pw))
+            has_digit = bool(re.search(r'\d', new_pw))
+            
             if not new_id.strip() or not new_pw.strip():
                 st.warning("아이디와 비밀번호를 입력해 주세요.")
+            elif not is_id_valid:
+                st.error("아이디는 영문(대소문증)만 사용할 수 있습니다.")
+            elif not (has_letter and has_digit):
+                st.error("비밀번호는 영문자와 숫자를 모두 포함해야 합니다.")
             elif new_id in st.session_state.users:
                 st.error("이미 존재하는 아이디입니다.")
             else:
@@ -410,14 +492,16 @@ if st.session_state.current_user is None:
                     "schedule": new_schedule
                 }
                 save_json(USER_FILE, st.session_state.users)
-                st.success("회원가입이 완료되었습니다. 로그인 탭에서 로그인해 주세요.")
+                st.success("회원가입 완료 로그인 화면으로 이동합니다.")
+                set_auth_page("login")
+        st.markdown("</div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
     st.stop()
 
 
 # ==========================================
-# 사용자 공통 상태 및 상단 바
+# 로그인 완료 상태 공통 변수
 # ==========================================
 user_info = st.session_state.users.get(st.session_state.current_user, {"schedule": DEFAULT_SCHEDULE})
 user_schedule = user_info.get("schedule", DEFAULT_SCHEDULE)
@@ -425,10 +509,9 @@ user_tasks = [t for t in st.session_state.tasks if t.get("user_id") == st.sessio
 
 
 # ==========================================
-# 1. 홈 화면 (Home)
+# 1. 메인 홈 화면 (Home)
 # ==========================================
 if st.session_state.current_page == "home":
-    # 상단 사용자 프로필 및 로그아웃 바
     col_u1, col_u2 = st.columns([3, 1])
     with col_u1:
         st.markdown(f"<p style='color: #4E5968; font-size: 14px; font-weight: 600; margin: 8px 0 0 0;'>반갑습니다, <b>{st.session_state.current_user}</b>님</p>", unsafe_allow_html=True)
@@ -436,15 +519,15 @@ if st.session_state.current_page == "home":
         st.markdown("<div class='logout-btn'>", unsafe_allow_html=True)
         if st.button("로그아웃", key="btn_logout"):
             st.session_state.current_user = None
-            st.session_state.current_page = "login"
+            st.session_state.auth_page = "intro"
             st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown(
         """
         <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 12px; margin-bottom: 24px;">
-            <div style="background-color: #3182F6; color: #FFFFFF; font-weight: 900; font-size: 32px; width: 72px; height: 72px; border-radius: 22px; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 20px rgba(49, 130, 246, 0.35); margin-bottom: 14px; letter-spacing: -1px;">PM</div>
-            <h1 style="font-weight: 900; color: #191F28; font-size: 34px; margin: 0 0 6px 0; text-align: center;">PACE MAKER</h1>
+            <div class="hero-logo" style="background-color: #3182F6; color: #FFFFFF; font-weight: 900; font-size: 32px; width: 72px; height: 72px; border-radius: 22px; display: flex; align-items: center; justify-content: center; margin-bottom: 14px; letter-spacing: -1px;">PM</div>
+            <h1 class="hero-title" style="font-weight: 900; color: #191F28; font-size: 34px; margin: 0 0 6px 0; text-align: center;">PACE MAKER</h1>
             <p style="color: #8B95A1; font-size: 14px; margin: 0; text-align: center;">목표가 틀어져도 괜찮습니다. 오늘 할 일을 유연하게 맞춰드립니다.</p>
         </div>
         """,
@@ -462,7 +545,6 @@ if st.session_state.current_page == "home":
         st.markdown(f"<p style='color: #4E5968; font-size: 15px; margin: 0;'>현재 <b>{active_count}개</b>의 진행 중인 과제가 있습니다.</p>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # 4개 메뉴 가로 배치
     col1, col2, col3, col4 = st.columns(4)
     with col1:
         if st.button("오늘의 할 일", key="btn_home_todo"):
@@ -533,7 +615,7 @@ elif st.session_state.current_page == "todo":
                     else:
                         daily_target = calculate_daily_target(remaining_amount, end_date, user_schedule)
                         st.metric(label="오늘의 맞춤 추천 목표", value=f"{daily_target} {task['unit']}")
-                        st.caption(f"남은 기간 D-{remaining_days}일 (내 주간 일정 반영)")
+                        st.caption(f"남은 기간 D-{remaining_days}일 (주간 일정 자동 반영)")
 
                 with col2:
                     if remaining_amount > 0 and end_date >= today and remaining_days > 0:
@@ -633,7 +715,7 @@ elif st.session_state.current_page == "schedule":
 # ==========================================
 elif st.session_state.current_page == "calendar":
     
-    # 4-A. 상세 화면
+    # 5-A. 상세 화면
     if st.session_state.selected_calendar_date is not None:
         selected_date_str = st.session_state.selected_calendar_date
         
@@ -711,7 +793,7 @@ elif st.session_state.current_page == "calendar":
                         st.markdown("</div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
-    # 4-B. 월간 그리드 캘린더
+    # 5-B. 월간 그리드 캘린더
     else:
         st.markdown("<div class='back-btn'>", unsafe_allow_html=True)
         if st.button("←", key="back_from_cal_main"):
