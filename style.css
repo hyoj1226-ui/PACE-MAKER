@@ -50,27 +50,28 @@
     }
 }
 
+/* 로고 박스 크기 확대 (76px -> 100px) */
 .pm-logo-box-animated {
     background-color: #3182F6;
-    width: 76px;
-    height: 76px;
-    border-radius: 24px;
+    width: 100px;
+    height: 100px;
+    border-radius: 30px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 14px;
+    margin-bottom: 16px;
     animation: logoBgFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .pm-logo-box-static {
     background-color: #3182F6;
-    width: 76px;
-    height: 76px;
-    border-radius: 24px;
+    width: 100px;
+    height: 100px;
+    border-radius: 30px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 14px;
+    margin-bottom: 16px;
     box-shadow: 0 6px 20px rgba(49, 130, 246, 0.35);
 }
 
@@ -85,10 +86,10 @@
     stroke-dashoffset: 0;
 }
 
-/* 타이틀 폰트 */
+/* 타이틀 폰트 Times New Roman 설정 */
 .hero-title {
-    font-family: 'Montserrat', sans-serif !important;
-    letter-spacing: -1px !important;
+    font-family: 'Times New Roman', Times, serif !important;
+    letter-spacing: -0.5px !important;
 }
 
 /* 버튼 전역 눌림 애니메이션 */
