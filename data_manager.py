@@ -7,7 +7,6 @@ USER_FILE = "users.json"
 TASK_FILE = "tasks.json"
 DEFAULT_SCHEDULE = {"월": 3, "화": 3, "수": 3, "목": 3, "금": 3, "토": 5, "일": 5}
 
-# JSON 불러오기
 def load_json(filename, default_val):
     try:
         with open(filename, "r", encoding="utf-8") as f:
@@ -15,12 +14,10 @@ def load_json(filename, default_val):
     except (FileNotFoundError, json.JSONDecodeError):
         return default_val
 
-# JSON 저장하기
 def save_json(filename, data):
     with open(filename, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
 
-# 총 분량 및 단위 정수 파싱
 def parse_amount_and_unit(text_input, default_unit):
     text_input = text_input.strip()
     if not text_input:
@@ -41,7 +38,6 @@ def parse_amount_and_unit(text_input, default_unit):
         
     return amount, unit
 
-# 요일별 학습 가능 시간에 맞춘 오늘 추천 목표 연산
 def calculate_daily_target(remaining_amount, end_date_obj, user_schedule):
     today = date.today()
     remaining_days = (end_date_obj - today).days + 1
@@ -66,20 +62,8 @@ def calculate_daily_target(remaining_amount, end_date_obj, user_schedule):
     
     return math.ceil(remaining_amount * (today_hours / total_avail_hours))
 
-# PM SVG 로고 렌더링 HTML 함수
 def render_pm_logo_svg(is_animated=True):
     path_class = "pm-svg-path-animated" if is_animated else "pm-svg-path-static"
     box_class = "pm-logo-box-animated" if is_animated else "pm-logo-box-static"
     
-    return f"""
-    <div class="{box_class}">
-        <svg width="50" height="50" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- P 글자 획 -->
-            <path class="{path_class}" d="M 22,22 L 22,78 M 22,22 L 38,22 C 50,22 50,50 38,50 L 22,50" 
-                  stroke="white" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
-            <!-- M 글자 획 -->
-            <path class="{path_class}" d="M 52,78 L 52,22 L 68,54 L 84,22 L 84,78" 
-                  stroke="white" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-    </div>
-    """
+    return f'<div class="{box_class}"><svg width="68" height="68" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><path class="{path_class}" d="M 22,22 L 22,78 M 22,22 L 38,22 C 50,22 50,50 38,50 L 22,50" stroke="white" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/><path class="{path_class}" d="M 52,78 L 52,22 L 68,54 L 84,22 L 84,78" stroke="white" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/></svg></div>'
