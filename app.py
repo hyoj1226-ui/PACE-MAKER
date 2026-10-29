@@ -2,7 +2,6 @@ import streamlit as st
 import calendar
 from datetime import datetime, date
 
-# 데이터 및 인증 모듈 불러오기
 from data_manager import (
     load_json, save_json, parse_amount_and_unit, 
     calculate_daily_target, render_pm_logo_svg,
@@ -60,26 +59,14 @@ if st.session_state.current_user is None:
     
     # 0-A. 소개 화면
     if st.session_state.auth_page == "intro":
+        logo_html = render_pm_logo_svg(is_animated=True)
         st.markdown(
-            f"""
-            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 28px; margin-bottom: 32px;">
-                {render_pm_logo_svg(is_animated=True)}
-                <h1 class="hero-title" style="font-weight: 900; color: #191F28; font-size: 42px; margin: 0 0 10px 0; text-align: center;">PACE MAKER</h1>
-                <p style="color: #6B7684; font-size: 16px; margin: 0; text-align: center; font-weight: 500;">일정이 틀어져도 괜찮습니다. 당신의 일상에 맞추어 페이스를 조절해 드립니다.</p>
-            </div>
-            """,
+            f'<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 28px; margin-bottom: 32px;">{logo_html}<h1 class="hero-title" style="font-weight: 900; color: #191F28; font-size: 44px; margin: 0 0 10px 0; text-align: center;">PACE MAKER</h1><p style="color: #6B7684; font-size: 16px; margin: 0; text-align: center; font-weight: 500;">일정이 틀어져도 괜찮습니다. 당신의 일상에 맞추어 페이스를 조절해 드립니다.</p></div>',
             unsafe_allow_html=True
         )
 
         st.markdown(
-            """
-            <div class="tds-card" style="padding: 28px; margin-bottom: 24px;">
-                <h3 style="font-size: 18px; font-weight: 800; color: #191F28; margin: 0 0 12px 0;">지능형 과제 스케줄러</h3>
-                <p style="font-size: 14px; color: #4E5968; margin: 0 0 8px 0; line-height: 1.6;">• <b>개인 맞춤 가중 계산</b>: 요일별 학습 가능 시간에 맞추어 오늘의 일일 추천 목표를 자동으로 계산합니다.</p>
-                <p style="font-size: 14px; color: #4E5968; margin: 0 0 8px 0; line-height: 1.6;">• <b>직관적 월간 캘린더</b>: 과제 마감일이 표기된 월간 그리드로 주요 일정을 한눈에 파악합니다.</p>
-                <p style="font-size: 14px; color: #4E5968; margin: 0; line-height: 1.6;">• <b>실시간 진도율 기록</b>: 정수 단위 입력과 정교한 % 소수점 표기로 학습 진행률을 모니터링합니다.</p>
-            </div>
-            """,
+            """<div class="tds-card" style="padding: 28px; margin-bottom: 24px;"><h3 style="font-size: 18px; font-weight: 800; color: #191F28; margin: 0 0 12px 0;">지능형 과제 스케줄러</h3><p style="font-size: 14px; color: #4E5968; margin: 0 0 8px 0; line-height: 1.6;">• <b>개인 맞춤 가중 계산</b>: 요일별 학습 가능 시간에 맞추어 오늘의 일일 추천 목표를 자동으로 계산합니다.</p><p style="font-size: 14px; color: #4E5968; margin: 0 0 8px 0; line-height: 1.6;">• <b>직관적 월간 캘린더</b>: 과제 마감일이 표기된 월간 그리드로 주요 일정을 한눈에 파악합니다.</p><p style="font-size: 14px; color: #4E5968; margin: 0; line-height: 1.6;">• <b>실시간 진도율 기록</b>: 정수 단위 입력과 정교한 % 소수점 표기로 학습 진행률을 모니터링합니다.</p></div>""",
             unsafe_allow_html=True
         )
 
@@ -193,14 +180,9 @@ if st.session_state.current_page == "home":
     if should_animate:
         st.session_state.home_logo_animated = True
 
+    logo_html = render_pm_logo_svg(is_animated=should_animate)
     st.markdown(
-        f"""
-        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 12px; margin-bottom: 24px;">
-            {render_pm_logo_svg(is_animated=should_animate)}
-            <h1 class="hero-title" style="font-weight: 900; color: #191F28; font-size: 34px; margin: 0 0 6px 0; text-align: center;">PACE MAKER</h1>
-            <p style="color: #8B95A1; font-size: 14px; margin: 0; text-align: center;">목표가 틀어져도 괜찮습니다. 오늘 할 일을 유연하게 맞춰드립니다.</p>
-        </div>
-        """,
+        f'<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 12px; margin-bottom: 24px;">{logo_html}<h1 class="hero-title" style="font-weight: 900; color: #191F28; font-size: 38px; margin: 0 0 6px 0; text-align: center;">PACE MAKER</h1><p style="color: #8B95A1; font-size: 14px; margin: 0; text-align: center;">목표가 틀어져도 괜찮습니다. 오늘 할 일을 유연하게 맞춰드립니다.</p></div>',
         unsafe_allow_html=True
     )
     
@@ -247,11 +229,7 @@ elif st.session_state.current_page == "todo":
 
     if not user_tasks:
         st.markdown(
-            """
-            <div class="tds-card" style="text-align: center; padding: 40px 20px;">
-                <p style="font-size: 15px; color: #8B95A1; margin: 0;">등록된 과제가 없습니다.<br>과제 등록 페이지에서 새로운 과제를 추가해 보세요.</p>
-            </div>
-            """,
+            """<div class="tds-card" style="text-align: center; padding: 40px 20px;"><p style="font-size: 15px; color: #8B95A1; margin: 0;">등록된 과제가 없습니다.<br>과제 등록 페이지에서 새로운 과제를 추가해 보세요.</p></div>""",
             unsafe_allow_html=True
         )
     else:
@@ -403,11 +381,7 @@ elif st.session_state.current_page == "calendar":
         
         if not day_tasks:
             st.markdown(
-                """
-                <div style="text-align: center; padding: 40px 20px;">
-                    <p style="font-size: 15px; color: #8B95A1; margin: 0;">이 날짜에 마감 예정인 과제가 없습니다.</p>
-                </div>
-                """,
+                """<div style="text-align: center; padding: 40px 20px;"><p style="font-size: 15px; color: #8B95A1; margin: 0;">이 날짜에 마감 예정인 과제가 없습니다.</p></div>""",
                 unsafe_allow_html=True
             )
         else:
