@@ -1,326 +1,21 @@
 import streamlit as st
-import json
-import math
-import re
 import calendar
 from datetime import datetime, date
 
-# 1. 페이지 기본 설정 (이모티콘 전면 금지)
+# 데이터 및 인증 모듈 불러오기
+from data_manager import (
+    load_json, save_json, parse_amount_and_unit, 
+    calculate_daily_target, render_pm_logo_svg,
+    USER_FILE, TASK_FILE, DEFAULT_SCHEDULE
+)
+from auth import validate_signup
+
+# 1. 페이지 기본 설정
 st.set_page_config(page_title="PACE MAKER", layout="centered")
 
-# 2. 고급 타이포그래피 및 화려한 애니메이션 커스텀 CSS
-tds_style = """
-<style>
-    @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
-    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&display=swap');
-
-    /* 전체 배경색 및 글로벌 폰트 설정 */
-    .stApp {
-        background-color: #F2F4F6 !important;
-        font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
-        color: #191F28;
-    }
-    
-    .block-container {
-        padding-top: 2rem !important;
-        padding-bottom: 3rem !important;
-        max-width: 720px !important;
-    }
-
-    /* 카드 컨테이너 스타일 */
-    .tds-card {
-        background-color: #FFFFFF;
-        border-radius: 24px;
-        padding: 26px;
-        border: 1px solid #E5E8EB;
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
-        margin-bottom: 20px;
-    }
-
-    /* 키프레임 애니메이션 정의 */
-    @keyframes floatLogo {
-        0% { transform: translateY(0px) scale(1); box-shadow: 0 8px 24px rgba(49, 130, 246, 0.35); }
-        50% { transform: translateY(-10px) scale(1.04); box-shadow: 0 18px 36px rgba(49, 130, 246, 0.45); }
-        100% { transform: translateY(0px) scale(1); box-shadow: 0 8px 24px rgba(49, 130, 246, 0.35); }
-    }
-
-    @keyframes fadeInUp {
-        from { opacity: 0; transform: translateY(24px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    @keyframes pulseGlow {
-        0% { border-color: #E5E8EB; }
-        50% { border-color: #3182F6; box-shadow: 0 0 20px rgba(49, 130, 246, 0.2); }
-        100% { border-color: #E5E8EB; }
-    }
-
-    /* 소개 화면 요소 애니메이션 클래스 */
-    .hero-logo {
-        animation: floatLogo 3.2s ease-in-out infinite;
-        font-family: 'Montserrat', sans-serif !important;
-    }
-
-    .hero-title {
-        font-family: 'Montserrat', sans-serif !important;
-        animation: fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1);
-        letter-spacing: -1px !important;
-    }
-
-    .hero-desc {
-        animation: fadeInUp 0.9s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .hero-feature-card {
-        animation: fadeInUp 1.1s cubic-bezier(0.16, 1, 0.3, 1);
-        animation: pulseGlow 4s infinite;
-    }
-
-    /* 버튼 기본 애니메이션 */
-    button {
-        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
-        font-family: 'Pretendard', sans-serif !important;
-    }
-    
-    button:active {
-        transform: scale(0.94) !important;
-        opacity: 0.9 !important;
-    }
-
-    /* 메인 홈 메뉴 버튼 (가로 4열) */
-    div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(4)) {
-        gap: 10px !important;
-    }
-
-    div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(4)) button {
-        background: #FFFFFF !important;
-        color: #191F28 !important;
-        border: 1px solid #E5E8EB !important;
-        border-radius: 20px !important;
-        height: 110px !important;
-        min-height: 110px !important;
-        font-size: 15px !important;
-        font-weight: 700 !important;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03) !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        width: 100% !important;
-    }
-
-    div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(4)) button:hover {
-        background-color: #FFFFFF !important;
-        border-color: #3182F6 !important;
-        color: #3182F6 !important;
-        transform: translateY(-3px) !important;
-        box-shadow: 0 8px 20px rgba(49, 130, 246, 0.15) !important;
-    }
-
-    /* 뒤로가기 화살표 버튼 */
-    div.back-btn > button {
-        background-color: #FFFFFF !important;
-        color: #191F28 !important;
-        border: 1px solid #E5E8EB !important;
-        border-radius: 12px !important;
-        padding: 6px 12px !important;
-        font-size: 18px !important;
-        font-weight: 800 !important;
-        width: 44px !important;
-        height: 44px !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
-    }
-
-    div.back-btn > button:hover {
-        color: #3182F6 !important;
-        border-color: #3182F6 !important;
-        background-color: #E8F3FF !important;
-    }
-
-    /* 초록색 버튼: 등록, 저장, 기록 */
-    div[data-testid="stFormSubmitButton"] > button, div.record-btn > button, div.save-btn > button {
-        background-color: #10B981 !important;
-        color: #FFFFFF !important;
-        border-radius: 14px !important;
-        border: none !important;
-        font-weight: 700 !important;
-        font-size: 15px !important;
-        padding: 12px 16px !important;
-        width: 100% !important;
-        box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25) !important;
-    }
-
-    div[data-testid="stFormSubmitButton"] > button:hover, div.record-btn > button:hover, div.save-btn > button:hover {
-        background-color: #059669 !important;
-        box-shadow: 0 6px 18px rgba(16, 185, 129, 0.35) !important;
-    }
-
-    /* 빨간색 버튼: 삭제, 로그아웃 */
-    div.delete-btn > button, div.logout-btn > button {
-        background-color: #F43F5E !important;
-        color: #FFFFFF !important;
-        border: none !important;
-        border-radius: 12px !important;
-        padding: 10px 14px !important;
-        font-size: 13px !important;
-        font-weight: 700 !important;
-        width: 100% !important;
-        box-shadow: 0 4px 14px rgba(244, 63, 94, 0.25) !important;
-    }
-
-    div.delete-btn > button:hover, div.logout-btn > button:hover {
-        background-color: #E11D48 !important;
-        box-shadow: 0 6px 18px rgba(244, 63, 94, 0.35) !important;
-    }
-
-    /* 토스 블루 버튼 */
-    .stButton > button {
-        background-color: #3182F6;
-        color: #FFFFFF;
-        border-radius: 14px;
-        border: none;
-        font-weight: 700;
-        font-size: 15px;
-        padding: 12px 16px;
-        width: 100%;
-        box-shadow: 0 4px 14px rgba(49, 130, 246, 0.25);
-    }
-
-    .stButton > button:hover {
-        background-color: #1B64DA;
-        box-shadow: 0 6px 18px rgba(49, 130, 246, 0.35);
-    }
-
-    /* 캘린더 연월 클릭 팝오버 */
-    div.month-popover > div[data-testid="stPopover"] > button {
-        background-color: transparent !important;
-        color: #191F28 !important;
-        border: none !important;
-        font-size: 18px !important;
-        font-weight: 800 !important;
-        box-shadow: none !important;
-        padding: 6px 12px !important;
-        border-radius: 10px !important;
-        width: auto !important;
-        margin: 0 auto !important;
-        display: block !important;
-    }
-
-    div.month-popover > div[data-testid="stPopover"] > button:hover {
-        background-color: #E8F3FF !important;
-        color: #3182F6 !important;
-    }
-
-    /* 캘린더 7열 그리드 CSS */
-    div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(7)) {
-        gap: 4px !important;
-    }
-
-    div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(7)) > div[data-testid="stColumn"] {
-        padding: 0px !important;
-    }
-
-    div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(7)) button {
-        width: 100% !important;
-        background-color: #FFFFFF !important;
-        color: #191F28 !important;
-        border: 1px solid #E2E8F0 !important;
-        border-radius: 8px !important;
-        min-height: 85px !important;
-        height: 85px !important;
-        padding: 6px !important;
-        text-align: left !important;
-        font-size: 12px !important;
-        line-height: 1.3 !important;
-        white-space: pre-wrap !important;
-        word-break: break-all !important;
-        box-shadow: none !important;
-        display: block !important;
-    }
-
-    div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(7)) button:hover:not(:disabled) {
-        background-color: #F8FAFC !important;
-        border-color: #3182F6 !important;
-    }
-
-    div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(7)) button:disabled {
-        background-color: #FAFAFA !important;
-        border-color: #F1F5F9 !important;
-        cursor: default !important;
-        opacity: 0.4 !important;
-    }
-
-    div[data-testid="stExpander"] {
-        background-color: #FFFFFF !important;
-        border-radius: 20px !important;
-        border: 1px solid #E5E8EB !important;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03) !important;
-        margin-bottom: 16px !important;
-        overflow: hidden;
-    }
-    
-    div[data-testid="stExpander"] > details {
-        border: none !important;
-    }
-
-    div[data-testid="stMetricValue"] {
-        color: #3182F6 !important;
-        font-size: 24px !important;
-        font-weight: 700 !important;
-    }
-
-    div[data-testid="stMetricLabel"] {
-        color: #8B95A1 !important;
-        font-size: 13px !important;
-        font-weight: 500 !important;
-    }
-
-    div[data-testid="stProgressBar"] > div > div {
-        background-color: #3182F6 !important;
-        border-radius: 10px !important;
-    }
-</style>
-"""
-st.markdown(tds_style, unsafe_allow_html=True)
-
-USER_FILE = "users.json"
-TASK_FILE = "tasks.json"
-DEFAULT_SCHEDULE = {"월": 3, "화": 3, "수": 3, "목": 3, "금": 3, "토": 5, "일": 5}
-
-# 파일 입출력 함수
-def load_json(filename, default_val):
-    try:
-        with open(filename, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
-        return default_val
-
-def save_json(filename, data):
-    with open(filename, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=4)
-
-# 파싱 함수
-def parse_amount_and_unit(text_input, default_unit):
-    text_input = text_input.strip()
-    if not text_input:
-        return None, None
-    
-    match = re.search(r'([\d.]+)', text_input)
-    if not match:
-        return None, None
-    
-    amount = int(float(match.group(1)))
-    
-    if "페이지" in text_input:
-        unit = "페이지"
-    elif "문제" in text_input:
-        unit = "문제 수"
-    else:
-        unit = default_unit
-        
-    return amount, unit
+# 2. 외부 style.css 불러오기
+with open("style.css", "r", encoding="utf-8") as f:
+    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
 # 세션 상태 초기화
 if "users" not in st.session_state:
@@ -333,10 +28,13 @@ if "current_user" not in st.session_state:
     st.session_state.current_user = None
 
 if "auth_page" not in st.session_state:
-    st.session_state.auth_page = "intro" # "intro", "login", "signup"
+    st.session_state.auth_page = "intro"
 
 if "current_page" not in st.session_state:
     st.session_state.current_page = "home"
+
+if "home_logo_animated" not in st.session_state:
+    st.session_state.home_logo_animated = False
 
 today_obj = date.today()
 if "cal_year" not in st.session_state:
@@ -354,45 +52,20 @@ def set_auth_page(auth_name):
     st.session_state.auth_page = auth_name
     st.rerun()
 
-# 요일별 맞춤 목표 계산 함수
-def calculate_daily_target(remaining_amount, end_date_obj, user_schedule):
-    today = date.today()
-    remaining_days = (end_date_obj - today).days + 1
-    if remaining_days <= 0 or remaining_amount <= 0:
-        return 0
-    
-    weekday_keys = ["월", "화", "수", "목", "금", "토", "일"]
-    total_avail_hours = 0
-    day_hours_list = []
-    
-    for i in range(remaining_days):
-        target_day = date.fromordinal(today.toordinal() + i)
-        w_idx = target_day.weekday()
-        w_key = weekday_keys[w_idx]
-        hours = user_schedule.get(w_key, 3)
-        day_hours_list.append(hours)
-        total_avail_hours += hours
-        
-    today_hours = day_hours_list[0]
-    if total_avail_hours == 0:
-        return math.ceil(remaining_amount / remaining_days)
-    
-    return math.ceil(remaining_amount * (today_hours / total_avail_hours))
-
 
 # ==========================================
-# 0. 비로그인 상태 (소개 애니메이션 / 창 분리 로그인/회원가입)
+# 0. 비로그인 상태 (소개 / 로그인 / 회원가입)
 # ==========================================
 if st.session_state.current_user is None:
     
-    # 0-A. 첫 화면: 화려한 소개 및 안내 화면 (Splash Intro View)
+    # 0-A. 소개 화면
     if st.session_state.auth_page == "intro":
         st.markdown(
-            """
+            f"""
             <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 28px; margin-bottom: 32px;">
-                <div class="hero-logo" style="background-color: #3182F6; color: #FFFFFF; font-weight: 900; font-size: 38px; width: 88px; height: 88px; border-radius: 28px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; letter-spacing: -1px;">PM</div>
+                {render_pm_logo_svg(is_animated=True)}
                 <h1 class="hero-title" style="font-weight: 900; color: #191F28; font-size: 42px; margin: 0 0 10px 0; text-align: center;">PACE MAKER</h1>
-                <p class="hero-desc" style="color: #6B7684; font-size: 16px; margin: 0; text-align: center; font-weight: 500;">일정이 틀어져도 괜찮습니다. 당신의 일상에 맞추어 페이스를 조절해 드립니다.</p>
+                <p style="color: #6B7684; font-size: 16px; margin: 0; text-align: center; font-weight: 500;">일정이 틀어져도 괜찮습니다. 당신의 일상에 맞추어 페이스를 조절해 드립니다.</p>
             </div>
             """,
             unsafe_allow_html=True
@@ -400,7 +73,7 @@ if st.session_state.current_user is None:
 
         st.markdown(
             """
-            <div class="tds-card hero-feature-card" style="padding: 28px; margin-bottom: 24px;">
+            <div class="tds-card" style="padding: 28px; margin-bottom: 24px;">
                 <h3 style="font-size: 18px; font-weight: 800; color: #191F28; margin: 0 0 12px 0;">지능형 과제 스케줄러</h3>
                 <p style="font-size: 14px; color: #4E5968; margin: 0 0 8px 0; line-height: 1.6;">• <b>개인 맞춤 가중 계산</b>: 요일별 학습 가능 시간에 맞추어 오늘의 일일 추천 목표를 자동으로 계산합니다.</p>
                 <p style="font-size: 14px; color: #4E5968; margin: 0 0 8px 0; line-height: 1.6;">• <b>직관적 월간 캘린더</b>: 과제 마감일이 표기된 월간 그리드로 주요 일정을 한눈에 파악합니다.</p>
@@ -421,7 +94,7 @@ if st.session_state.current_user is None:
                 set_auth_page("signup")
             st.markdown("</div>", unsafe_allow_html=True)
 
-    # 0-B. 로그인 전용 창
+    # 0-B. 로그인 창
     elif st.session_state.auth_page == "login":
         st.markdown("<div class='back-btn'>", unsafe_allow_html=True)
         if st.button("←", key="back_to_intro_from_login"):
@@ -449,7 +122,7 @@ if st.session_state.current_user is None:
                 st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
 
-    # 0-C. 회원가입 전용 창 (유효성 검증 포함)
+    # 0-C. 회원가입 창
     elif st.session_state.auth_page == "signup":
         st.markdown("<div class='back-btn'>", unsafe_allow_html=True)
         if st.button("←", key="back_to_intro_from_signup"):
@@ -473,17 +146,9 @@ if st.session_state.current_user is None:
 
         st.markdown("<div class='record-btn' style='margin-top: 20px;'>", unsafe_allow_html=True)
         if st.button("회원가입", key="btn_submit_signup"):
-            # 유효성 검사 (아이디: 영문만 / 비밀번호: 영문+숫자 조합)
-            is_id_valid = bool(re.match(r'^[a-zA-Z]+$', new_id.strip()))
-            has_letter = bool(re.search(r'[a-zA-Z]', new_pw))
-            has_digit = bool(re.search(r'\d', new_pw))
-            
-            if not new_id.strip() or not new_pw.strip():
-                st.warning("아이디와 비밀번호를 입력해 주세요.")
-            elif not is_id_valid:
-                st.error("아이디는 영문(대소문증)만 사용할 수 있습니다.")
-            elif not (has_letter and has_digit):
-                st.error("비밀번호는 영문자와 숫자를 모두 포함해야 합니다.")
+            is_ok, msg = validate_signup(new_id, new_pw)
+            if not is_ok:
+                st.error(msg)
             elif new_id in st.session_state.users:
                 st.error("이미 존재하는 아이디입니다.")
             else:
@@ -492,7 +157,7 @@ if st.session_state.current_user is None:
                     "schedule": new_schedule
                 }
                 save_json(USER_FILE, st.session_state.users)
-                st.success("회원가입 완료 로그인 화면으로 이동합니다.")
+                st.success("회원가입 완료! 로그인 화면으로 이동합니다.")
                 set_auth_page("login")
         st.markdown("</div>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
@@ -501,7 +166,7 @@ if st.session_state.current_user is None:
 
 
 # ==========================================
-# 로그인 완료 상태 공통 변수
+# 로그인 완료 상태 공통 데이터
 # ==========================================
 user_info = st.session_state.users.get(st.session_state.current_user, {"schedule": DEFAULT_SCHEDULE})
 user_schedule = user_info.get("schedule", DEFAULT_SCHEDULE)
@@ -520,13 +185,18 @@ if st.session_state.current_page == "home":
         if st.button("로그아웃", key="btn_logout"):
             st.session_state.current_user = None
             st.session_state.auth_page = "intro"
+            st.session_state.home_logo_animated = False
             st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
 
+    should_animate = not st.session_state.home_logo_animated
+    if should_animate:
+        st.session_state.home_logo_animated = True
+
     st.markdown(
-        """
+        f"""
         <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 12px; margin-bottom: 24px;">
-            <div class="hero-logo" style="background-color: #3182F6; color: #FFFFFF; font-weight: 900; font-size: 32px; width: 72px; height: 72px; border-radius: 22px; display: flex; align-items: center; justify-content: center; margin-bottom: 14px; letter-spacing: -1px;">PM</div>
+            {render_pm_logo_svg(is_animated=should_animate)}
             <h1 class="hero-title" style="font-weight: 900; color: #191F28; font-size: 34px; margin: 0 0 6px 0; text-align: center;">PACE MAKER</h1>
             <p style="color: #8B95A1; font-size: 14px; margin: 0; text-align: center;">목표가 틀어져도 괜찮습니다. 오늘 할 일을 유연하게 맞춰드립니다.</p>
         </div>
