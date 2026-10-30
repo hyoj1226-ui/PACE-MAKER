@@ -29,6 +29,12 @@ python -m streamlit run app.py
    Streamlit Cloud에 배포했다면 앱 설정의 **Secrets**에 같은 내용을 붙여 넣습니다.
 6. 앱을 다시 실행한 뒤 **일정 관리 → Google 계정으로 연동하기**를 누릅니다.
 
+## Streamlit Cloud에 배포할 때
+
+- `secrets.toml` 은 깃허브에 올라가지 않으므로, 앱 관리 화면의 **Settings → Secrets** 에 같은 내용을 직접 붙여 넣어야 합니다.
+- 이때 `redirect_uri` 는 배포 주소(`https://<앱 이름>.streamlit.app`)로 바꾸고, 구글 클라우드 콘솔의 **승인된 리디렉션 URI** 에도 같은 주소를 추가합니다.
+- Streamlit Cloud의 파일 저장소는 앱이 재시작되면 초기화됩니다. `users.json`, `tasks.json` 도 깃허브에 없으므로, 배포된 앱에서는 회원가입부터 새로 해야 하고 재시작 시 데이터가 사라질 수 있습니다.
+
 ## 일정 반영 방식
 
 - 하루 공부 가능 시간 = 요일별 학습 가능 시간 − 그날 구글 캘린더 일정이 차지하는 시간 (최소 0시간)

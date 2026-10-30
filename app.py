@@ -573,8 +573,9 @@ elif st.session_state.current_page == "schedule":
         if not auth_cache or time.time() - auth_cache["created_at"] > gcal.OAUTH_STATE_TTL_SECONDS - 60:
             auth_cache = {"url": gcal.build_auth_url(st.session_state.current_user), "created_at": time.time()}
             st.session_state.gcal_auth = auth_cache
+        # Streamlit Cloud는 앱을 iframe 안에 띄우고 구글 로그인은 iframe을 거부하므로 창 전체(_top)로 이동
         st.markdown(
-            f"<a class='pm-link-button' href='{html.escape(auth_cache['url'], quote=True)}' target='_self'>{label}</a>",
+            f"<a class='pm-link-button' href='{html.escape(auth_cache['url'], quote=True)}' target='_top'>{label}</a>",
             unsafe_allow_html=True
         )
 
