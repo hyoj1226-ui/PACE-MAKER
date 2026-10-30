@@ -301,6 +301,288 @@ header[data-testid="stHeader"] {
     margin-left: 3px;
 }
 
+/* 구글 캘린더 */
+.pm-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--pm-gold);
+    background: var(--pm-gold-soft);
+    border: 1px solid rgba(176, 141, 87, 0.25);
+    border-radius: 999px;
+    padding: 3px 10px;
+    white-space: nowrap;
+}
+
+.pm-calendar-strip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid var(--pm-line);
+    font-size: 14px;
+    color: var(--pm-text);
+}
+
+.pm-calendar-strip b {
+    color: var(--pm-ink);
+}
+
+.pm-today-card {
+    background: var(--pm-surface);
+    border: 1px solid var(--pm-line);
+    border-radius: 20px;
+    padding: 24px 26px;
+    box-shadow: var(--pm-shadow);
+    margin-bottom: 32px;
+}
+
+.pm-today-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.pm-today-hours {
+    font-family: var(--pm-serif);
+    font-variant-numeric: lining-nums;
+    font-size: 44px;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--pm-ink);
+}
+
+.pm-today-hours span {
+    font-family: var(--pm-sans);
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--pm-muted);
+    margin-left: 4px;
+}
+
+.pm-today-meta {
+    font-size: 13px !important;
+    color: var(--pm-muted) !important;
+    margin: 12px 0 0 !important;
+}
+
+.pm-event-list {
+    list-style: none;
+    margin: 14px 0 0 !important;
+    padding: 0 !important;
+}
+
+.pm-event-list li {
+    display: flex;
+    gap: 14px;
+    align-items: baseline;
+    padding: 9px 0 !important;
+    margin: 0 !important;
+    border-top: 1px solid var(--pm-line);
+    font-size: 14px;
+}
+
+.pm-event-time {
+    min-width: 92px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--pm-gold);
+    font-variant-numeric: tabular-nums;
+}
+
+.pm-event-title {
+    color: var(--pm-ink);
+}
+
+.pm-hint {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--pm-text);
+    background: var(--pm-gold-soft);
+    border: 1px solid rgba(176, 141, 87, 0.22);
+    border-radius: 14px;
+    padding: 14px 18px;
+    margin-bottom: 28px;
+}
+
+[class*="st-key-card_"] .pm-hint {
+    margin-bottom: 0;
+}
+
+.pm-link-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    border-radius: 12px;
+    background: var(--pm-ink);
+    color: #FFFFFF !important;
+    font-size: 15px;
+    font-weight: 600;
+    text-decoration: none !important;
+    box-shadow: 0 6px 18px rgba(20, 22, 26, 0.18);
+    transition: background-color 0.25s var(--pm-ease), color 0.25s var(--pm-ease);
+}
+
+.pm-link-button:hover {
+    background: var(--pm-ink-2);
+    color: var(--pm-gold-light) !important;
+}
+
+.pm-connected {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--pm-ink);
+    margin-bottom: 4px;
+}
+
+.pm-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #3F8F63;
+    box-shadow: 0 0 0 4px rgba(63, 143, 99, 0.15);
+}
+
+.st-key-btn_gcal_disconnect .stButton button {
+    min-height: 42px !important;
+    font-size: 14px !important;
+    color: var(--pm-danger) !important;
+    background: transparent !important;
+    border: 1px solid #E8CFCB !important;
+}
+
+.st-key-btn_gcal_disconnect .stButton button:hover {
+    background: var(--pm-danger-soft) !important;
+    border-color: var(--pm-danger) !important;
+}
+
+/* 오늘의 계획 (과제 간 시간 배분) */
+.pm-today-hours--sans {
+    font-family: var(--pm-sans);
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-top: 2px;
+}
+
+.pm-today-hours span {
+    white-space: nowrap;
+}
+
+.pm-plan-list {
+    margin-top: 14px;
+}
+
+.pm-plan-row {
+    display: grid;
+    grid-template-columns: 1fr auto auto 44px;
+    gap: 14px;
+    align-items: baseline;
+    padding: 10px 0;
+    border-top: 1px solid var(--pm-line);
+    font-size: 14px;
+}
+
+.pm-plan-title {
+    font-weight: 600;
+    color: var(--pm-ink);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pm-plan-amount {
+    font-weight: 700;
+    color: var(--pm-ink);
+    font-variant-numeric: tabular-nums;
+}
+
+.pm-plan-time {
+    color: var(--pm-gold);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.pm-plan-due {
+    color: var(--pm-muted);
+    font-size: 12px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.pm-plan-warning {
+    margin-top: 12px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    background: var(--pm-danger-soft);
+    color: var(--pm-danger);
+    font-size: 13px;
+    line-height: 1.55;
+}
+
+/* 페이스 배지 */
+.pm-pace-badge {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 2px 9px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+    vertical-align: 1px;
+}
+
+.pm-pace-badge--ahead {
+    color: var(--pm-gold);
+    background: var(--pm-gold-soft);
+    border: 1px solid rgba(176, 141, 87, 0.3);
+}
+
+.pm-pace-badge--on_track {
+    color: var(--pm-text);
+    background: var(--pm-surface-2);
+    border: 1px solid var(--pm-line);
+}
+
+.pm-pace-badge--behind {
+    color: var(--pm-danger);
+    background: var(--pm-danger-soft);
+    border: 1px solid #E8CFCB;
+}
+
+.pm-pace-note {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid var(--pm-line);
+    font-size: 14px;
+    color: var(--pm-text);
+}
+
+.pm-pace-note .pm-pace-badge {
+    margin-left: 0;
+}
+
+.pm-stats--4 {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+/* 진행 그래프 팝오버 */
+[data-testid="stPopoverBody"] {
+    min-width: min(460px, 88vw) !important;
+}
+
 /* 빈 상태 */
 .pm-empty {
     background: var(--pm-surface);
@@ -690,6 +972,7 @@ div[data-testid="stAlert"] > div {
     align-items: flex-start !important;
     justify-content: flex-start !important;
     text-align: left !important;
+    overflow: hidden !important;
 }
 
 .st-key-cal_grid button > div,
@@ -727,6 +1010,28 @@ div[data-testid="stAlert"] > div {
 
 /* 모바일 */
 @media (max-width: 640px) {
+    .pm-today-hours--sans {
+        font-size: 26px;
+    }
+
+    .pm-stats--4 {
+        grid-template-columns: repeat(2, 1fr);
+        row-gap: 16px;
+    }
+
+    .pm-stats--4 .pm-stat:nth-child(3) {
+        border-left: none;
+        padding-left: 0;
+    }
+
+    .pm-plan-row {
+        grid-template-columns: 1fr auto auto;
+    }
+
+    .pm-plan-due {
+        display: none;
+    }
+
     .hero-title {
         font-size: 42px;
     }
