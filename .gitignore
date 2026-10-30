@@ -1,0 +1,8 @@
+# 비밀 키 / 사용자 데이터 (구글 토큰 포함)
+.streamlit/secrets.toml
+users.json
+tasks.json
+oauth_states.json
+
+__pycache__/
+.claude/
