@@ -158,7 +158,8 @@ def _api_get(session, path, params=None):
     resp.raise_for_status()
     return resp.json()
 
-@st.cache_data(ttl=600, show_spinner=False)
+# 구글 캘린더에서 새로 만든 일정이 1분 안에 앱에 보이도록 짧게 캐시
+@st.cache_data(ttl=60, show_spinner=False)
 def _fetch_events_cached(user_id, start_iso, end_iso, _creds):
     session = _api_session(_creds)
     # 범위 계산용 시간대는 기본값으로 시작하고, 응답에 담긴 캘린더 시간대로 교체

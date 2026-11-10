@@ -1,8 +1,14 @@
+import os
+import time
+
+# 서버(Streamlit Cloud)는 UTC라서 '오늘'이 한국 날짜와 어긋나지 않도록 한국 시간 기준으로 맞춤
+os.environ["TZ"] = "Asia/Seoul"
+time.tzset()
+
 import streamlit as st
 import altair as alt
 import calendar
 import html
-import time
 from datetime import datetime, date, timedelta
 
 import pandas as pd
