@@ -574,7 +574,7 @@ elif st.session_state.current_page == "schedule":
             auth_cache = {"url": gcal.build_auth_url(st.session_state.current_user), "created_at": time.time()}
             st.session_state.gcal_auth = auth_cache
         st.markdown(
-            f"<a class='pm-link-button' href='{html.escape(auth_cache['url'], quote=True)}' target='_self'>{label}</a>",
+            f"<a class='pm-link-button' href='{html.escape(auth_cache['url'], quote=True)}' target='_top'>{label}</a>",
             unsafe_allow_html=True
         )
 
